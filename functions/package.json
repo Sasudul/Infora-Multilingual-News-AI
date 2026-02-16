@@ -1,0 +1,18 @@
+{
+  "name": "@infora/functions",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Infora — Firebase Cloud Functions (TypeScript)",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "deploy": "firebase deploy --only functions",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf lib node_modules"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

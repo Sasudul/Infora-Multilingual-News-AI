@@ -1,0 +1,44 @@
+{
+  "name": "infora-multilingual-news-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multilingual Conversational AI for News Retrieval & Government Service Guidance — Sri Lanka",
+  "workspaces": [
+    "apps/mobile",
+    "apps/web",
+    "functions"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:mobile": "npm run start --workspace=apps/mobile",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:functions": "npm run build --workspace=functions",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage",
+    "deploy:all": "firebase deploy",
+    "emulators": "firebase emulators:start"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sasudul/Infora-Multilingual-News-AI.git"
+  },
+  "keywords": [
+    "multilingual",
+    "news",
+    "sri-lanka",
+    "firebase",
+    "expo",
+    "nextjs",
+    "react-native",
+    "conversational-ai"
+  ],
+  "author": "Sasudul",
+  "license": "MIT"
+}
