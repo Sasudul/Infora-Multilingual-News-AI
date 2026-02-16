@@ -1,0 +1,15 @@
+{
+  "name": "@infora/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Infora — Next.js 14 web application",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "clean": "rm -rf node_modules .next out"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

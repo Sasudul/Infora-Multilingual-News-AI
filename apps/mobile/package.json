@@ -1,0 +1,17 @@
+{
+  "name": "@infora/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Infora — Expo React Native mobile app",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "eslint . --ext .ts,.tsx",
+    "clean": "rm -rf node_modules .expo"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
