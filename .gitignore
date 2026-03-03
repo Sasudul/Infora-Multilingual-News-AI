@@ -88,3 +88,36 @@ ehthumbs.db
 # EAS
 # ==============================
 eas-build-local.json
+
+# ==============================
+# Java / Maven / Spring Boot
+# ==============================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.iws
+*.ipr
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ==============================
+# IntelliJ IDEA
+# ==============================
+.idea/
+*.iml
+out/
+
+# ==============================
+# Firebase Service Account Key
+# ==============================
+firebase-service-account.json
+**/firebase-service-account.json
+
+# ==============================
+# Spring Boot
+# ==============================
+HELP.md
+.sts4-cache/

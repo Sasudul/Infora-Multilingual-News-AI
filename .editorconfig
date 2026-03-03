@@ -1,0 +1,49 @@
+# EditorConfig — consistent coding style across IntelliJ IDEA & VS Code
+# https://editorconfig.org
+
+root = true
+
+# ─── Defaults ───
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ─── Java (Spring Boot backend) ───
+[*.java]
+indent_size = 4
+
+# ─── XML (Maven pom.xml, etc.) ───
+[*.xml]
+indent_size = 4
+
+# ─── Properties files ───
+[*.properties]
+indent_size = 0
+
+# ─── Markdown ───
+[*.md]
+trim_trailing_whitespace = false
+
+# ─── JSON ───
+[*.json]
+indent_size = 2
+
+# ─── YAML ───
+[*.{yml,yaml}]
+indent_size = 2
+
+# ─── TypeScript / JavaScript ───
+[*.{ts,tsx,js,jsx}]
+indent_size = 2
+
+# ─── CSS ───
+[*.{css,scss}]
+indent_size = 2
+
+# ─── Firestore / Storage Rules ───
+[*.rules]
+indent_size = 2

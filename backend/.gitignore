@@ -1,0 +1,22 @@
+# ─── Backend-specific ignores ───
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# Firebase service account key
+firebase-service-account.json
+
+# IDE
+.idea/
+*.iml
+out/
+
+# Spring Boot
+HELP.md
+.sts4-cache/
+
+# Logs
+*.log
+spring.log

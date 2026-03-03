@@ -11,10 +11,14 @@
   "scripts": {
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:mobile": "npm run start --workspace=apps/mobile",
+    "dev:backend": "cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=dev",
     "build:web": "npm run build --workspace=apps/web",
     "build:functions": "npm run build --workspace=functions",
+    "build:backend": "cd backend && mvn clean package -DskipTests",
+    "test:backend": "cd backend && mvn test",
     "lint": "npm run lint --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
+    "clean:backend": "cd backend && mvn clean",
     "deploy:hosting": "firebase deploy --only hosting",
     "deploy:functions": "firebase deploy --only functions",
     "deploy:rules": "firebase deploy --only firestore:rules,storage",
@@ -37,6 +41,8 @@
     "expo",
     "nextjs",
     "react-native",
+    "spring-boot",
+    "java",
     "conversational-ai"
   ],
   "author": "Sasudul",

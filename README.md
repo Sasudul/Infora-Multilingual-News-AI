@@ -1,14 +1,15 @@
 # Infora – Multilingual Conversational AI for News Retrieval and Government Service Guidance (Sri Lanka)
 
-A cross‑platform conversational assistant for Sri Lankan users, delivering verified local news and step‑by‑step guidance for common government services — in Sinhala (සිංහල) and English — with a unified, pixel‑perfect UI across Mobile (Android/iOS) and Web. Built end‑to‑end on Firebase.
+A cross‑platform conversational assistant for Sri Lankan users, delivering verified local news and step‑by‑step guidance for common government services — in Sinhala (සිංහල) and English — with a unified, pixel‑perfect UI across Mobile (Android/iOS) and Web. Powered by a **Spring Boot REST API** with **Firebase (Firestore)** as the database.
 
 <p align="center">
   <a href="https://expo.dev"><img alt="Expo" src="https://img.shields.io/badge/Expo-managed workflow-000000?logo=expo&logoColor=white"></a>
   <a href="https://reactnative.dev/"><img alt="React Native" src="https://img.shields.io/badge/React%20Native-mobile-61DAFB?logo=react&logoColor=white"></a>
   <a href="https://nextjs.org/"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14-000000?logo=nextdotjs&logoColor=white"></a>
   <a href="https://tailwindcss.com/"><img alt="Tailwind CSS" src="https://img.shields.io/badge/TailwindCSS-web-06B6D4?logo=tailwindcss&logoColor=white"></a>
-  <a href="https://firebase.google.com/"><img alt="Firebase" src="https://img.shields.io/badge/Firebase-backend-FFCA28?logo=firebase&logoColor=black"></a>
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Node.js Functions-3178C6?logo=typescript&logoColor=white">
+  <a href="https://spring.io/projects/spring-boot"><img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?logo=springboot&logoColor=white"></a>
+  <img alt="Java" src="https://img.shields.io/badge/Java-17+-ED8B00?logo=openjdk&logoColor=white">
+  <a href="https://firebase.google.com/"><img alt="Firebase" src="https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase&logoColor=black"></a>
   <img alt="npm workspaces" src="https://img.shields.io/badge/npm-workspaces-CB3837?logo=npm&logoColor=white">
 </p>
 
@@ -42,7 +43,8 @@ Infora is a friendly Sri Lankan AI assistant ("Lanka Assistant") that:
 - Guides users through government service processes one step at a time.
 - Automatically detects Sinhala or English, replies in the user's language, and remembers conversation context.
 - Runs on mobile (Android/iOS via Expo) and web (Next.js 14) with consistent UI/UX.
-- Uses Firebase exclusively for backend: Authentication, Firestore, Cloud Functions (TypeScript), and Storage.
+- **Spring Boot 3.2 REST API** (Java 17+) as the core backend, with **Firebase Firestore** as the database.
+- Firebase Authentication, Storage, and optional Cloud Functions for scheduled tasks.
 
 ---
 
@@ -74,6 +76,22 @@ Infora-Multilingual-News-AI/
 │       ├── package.json          #    Workspace package
 │       └── README.md
 │
+├── backend/                      # ☕ Spring Boot REST API (Java 17+)
+│   ├── src/main/java/com/infora/backend/
+│   │   ├── InforaBackendApplication.java   # Entry point
+│   │   ├── config/               #    Firebase, CORS, Security config
+│   │   ├── controller/           #    REST controllers
+│   │   ├── service/              #    Business logic layer
+│   │   ├── repository/           #    Firestore data access
+│   │   ├── model/                #    Domain models
+│   │   ├── dto/                  #    Request / Response DTOs
+│   │   └── exception/            #    Custom exceptions & handlers
+│   ├── src/main/resources/
+│   │   ├── application.properties
+│   │   └── application-dev.properties
+│   ├── pom.xml                   #    Maven config & dependencies
+│   └── README.md
+│
 ├── functions/                    # ⚡ Firebase Cloud Functions (TypeScript)
 │   ├── src/                      #    Function source code
 │   ├── tsconfig.json             #    TypeScript config
@@ -97,13 +115,14 @@ Infora-Multilingual-News-AI/
 └── README.md                     #    ← You are here
 ```
 
-### Workspaces
+### Workspaces & Modules
 
-| Workspace         | Path             | Description                                  |
-|--------------------|------------------|----------------------------------------------|
-| `@infora/mobile`   | `apps/mobile/`   | Expo managed-workflow React Native app       |
-| `@infora/web`      | `apps/web/`      | Next.js 14 App Router web application        |
-| `@infora/functions` | `functions/`    | Firebase Cloud Functions (TypeScript)        |
+| Module              | Path             | Language   | Description                               |
+|---------------------|------------------|------------|-------------------------------------------|
+| `@infora/mobile`    | `apps/mobile/`   | TypeScript | Expo managed-workflow React Native app    |
+| `@infora/web`       | `apps/web/`      | TypeScript | Next.js 14 App Router web application     |
+| **Infora Backend**  | `backend/`       | **Java**   | **Spring Boot 3.2 REST API (Maven)**      |
+| `@infora/functions` | `functions/`     | TypeScript | Firebase Cloud Functions (scheduled tasks)|
 
 ---
 
@@ -111,13 +130,18 @@ Infora-Multilingual-News-AI/
 
 > **Strict — do not change without discussion.**
 
-| Layer         | Technology                                         |
-|---------------|----------------------------------------------------|
-| **Mobile**    | React Native, Expo (managed), NativeWind, Reanimated 3 |
-| **Web**       | Next.js 14 (App Router), TypeScript, Tailwind CSS  |
-| **Backend**   | Firebase Auth, Cloud Firestore, Cloud Functions, Storage |
-| **Language**  | TypeScript throughout                              |
-| **Monorepo**  | npm workspaces                                     |
+| Layer         | Technology                                                        |
+|---------------|-------------------------------------------------------------------|
+| **Mobile**    | React Native, Expo (managed), NativeWind, Reanimated 3            |
+| **Web**       | Next.js 14 (App Router), TypeScript, Tailwind CSS                 |
+| **Backend**   | **Spring Boot 3.2**, Java 17+, Maven, Firebase Admin SDK          |
+| **Database**  | **Firebase Cloud Firestore** (via Admin SDK)                      |
+| **Auth**      | Firebase Authentication (token verification in Spring Security)   |
+| **Storage**   | Firebase Storage                                                  |
+| **Functions** | Firebase Cloud Functions (TypeScript) — scheduled / triggered tasks|
+| **API Docs**  | SpringDoc OpenAPI (Swagger UI)                                    |
+| **IDE**       | IntelliJ IDEA (backend), VS Code (frontend)                       |
+| **Monorepo**  | npm workspaces + Maven                                            |
 
 ---
 
@@ -130,19 +154,28 @@ Infora-Multilingual-News-AI/
 │  - Reanimated 3      │        │  - App Router        │
 └─────────▲────────────┘        └─────────▲────────────┘
           │                                │
-          │        Firebase SDKs (Auth, Firestore, Storage)
+          │          REST API (HTTP/JSON)   │
           │                                │
           ▼                                ▼
      ┌───────────────────────────────────────────────────┐
-     │                  Firebase Backend                  │
-     │  - Authentication                                  │
+     │          Spring Boot REST API (Java 17+)          │
+     │  - /api/v1/news/**     News endpoints             │
+     │  - /api/v1/services/** Gov services endpoints     │
+     │  - /api/v1/chat/**     Chat orchestration         │
+     │  - /api/v1/auth/**     Firebase token verification│
+     │  - Swagger UI at /swagger-ui.html                 │
+     └────────────────────▲──────────────────────────────┘
+                          │
+                          │  Firebase Admin SDK
+                          │
+                          ▼
+     ┌───────────────────────────────────────────────────┐
+     │                Firebase (Database)                 │
      │  - Cloud Firestore (users, chatSessions, newsCache,│
      │    govServices)                                    │
-     │  - Cloud Functions (TypeScript)                    │
-     │     • News ingestion/cache updates                 │
-     │     • NLP intent/district/time parsing             │
-     │     • Conversational orchestration                 │
+     │  - Authentication (ID token verification)          │
      │  - Storage (images, assets)                        │
+     │  - Cloud Functions (scheduled triggers, optional)  │
      └───────────────────────────────────────────────────┘
 ```
 
@@ -191,8 +224,11 @@ govServices (collection)
 
 ### Prerequisites
 
+- **Java 17+** (JDK) — [Adoptium](https://adoptium.net/) or Oracle
+- **Maven 3.8+** — bundled with IntelliJ IDEA, or [install separately](https://maven.apache.org/)
+- **IntelliJ IDEA** — [Download](https://www.jetbrains.com/idea/) (recommended for backend)
 - **Node.js** LTS (≥18) and **npm** (≥9)
-- **Firebase** account and project
+- **Firebase** account and project with service account key
 - **Expo CLI**: `npm i -g expo-cli` or use `npx expo`
 - Optional: **EAS CLI** for Expo builds: `npm i -g eas-cli`
 
@@ -203,11 +239,17 @@ govServices (collection)
 git clone https://github.com/Sasudul/Infora-Multilingual-News-AI.git
 cd Infora-Multilingual-News-AI
 
-# Install all workspace dependencies from the root
+# Install all JS workspace dependencies from the root
 npm install
+
+# Install Java/Maven backend dependencies
+cd backend
+mvn clean install -DskipTests
+cd ..
 ```
 
-> npm workspaces will automatically link `apps/mobile`, `apps/web`, and `functions`.
+> npm workspaces will automatically link `apps/mobile`, `apps/web`, and `functions`.  
+> Maven manages the `backend/` module independently.
 
 ### Environment Variables
 
@@ -219,16 +261,25 @@ npm install
    - `apps/mobile/.env` — with `EXPO_PUBLIC_*` variables
    - `apps/web/.env.local` — with `NEXT_PUBLIC_*` variables
    - `functions/.env` — with `NEWS_FEEDS`, `DEFAULT_DISTRICT`, etc.
-3. Fill in your **actual Firebase project values**. Never commit real secrets.
+3. **Backend**: Download your Firebase service account key and place it at:
+   ```
+   backend/src/main/resources/firebase-service-account.json
+   ```
+   (See `firebase-service-account.json.example` for instructions)
+4. Fill in your **actual Firebase project values**. Never commit real secrets.
 
 ### Running Locally
 
 ```bash
+# Start the Spring Boot backend (port 8080)
+npm run dev:backend
+# Or directly: cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Start the Next.js web dev server (port 3000)
+npm run dev:web
+
 # Start the Expo mobile dev server
 npm run dev:mobile
-
-# Start the Next.js web dev server
-npm run dev:web
 
 # Build Cloud Functions
 npm run build:functions
@@ -236,6 +287,8 @@ npm run build:functions
 # Start Firebase emulators (all services)
 npm run emulators
 ```
+
+> **Tip**: In IntelliJ IDEA, you can run `InforaBackendApplication.java` directly with the green ▶ button.
 
 ---
 
@@ -257,19 +310,23 @@ npm run emulators
 
 ## Development & Deployment
 
-| Command                  | Description                              |
-|--------------------------|------------------------------------------|
-| `npm run dev:web`        | Start Next.js dev server                 |
-| `npm run dev:mobile`     | Start Expo dev server                    |
-| `npm run build:web`      | Production build for web                 |
-| `npm run build:functions`| Compile Cloud Functions TypeScript       |
-| `npm run deploy:hosting` | Deploy web to Firebase Hosting           |
-| `npm run deploy:functions`| Deploy Cloud Functions                  |
-| `npm run deploy:rules`   | Deploy Firestore & Storage rules         |
-| `npm run deploy:all`     | Deploy everything                        |
-| `npm run emulators`      | Start Firebase Emulator Suite            |
-| `npm run lint`           | Lint all workspaces                      |
-| `npm run clean`          | Clean build artifacts in all workspaces  |
+| Command                  | Description                                  |
+|--------------------------|----------------------------------------------|
+| `npm run dev:backend`    | Start Spring Boot API (port 8080, dev profile)|
+| `npm run dev:web`        | Start Next.js dev server (port 3000)         |
+| `npm run dev:mobile`     | Start Expo dev server                        |
+| `npm run build:backend`  | Maven package backend JAR (skip tests)       |
+| `npm run build:web`      | Production build for web                     |
+| `npm run build:functions`| Compile Cloud Functions TypeScript           |
+| `npm run test:backend`   | Run backend unit & integration tests         |
+| `npm run clean:backend`  | Maven clean backend build artifacts          |
+| `npm run deploy:hosting` | Deploy web to Firebase Hosting               |
+| `npm run deploy:functions`| Deploy Cloud Functions                      |
+| `npm run deploy:rules`   | Deploy Firestore & Storage rules             |
+| `npm run deploy:all`     | Deploy everything                            |
+| `npm run emulators`      | Start Firebase Emulator Suite                |
+| `npm run lint`           | Lint all JS/TS workspaces                    |
+| `npm run clean`          | Clean JS build artifacts in all workspaces   |
 
 ---
 
@@ -296,8 +353,9 @@ git checkout -b feature/your-feature-name
 - **Code style**: TypeScript strict mode; follow existing patterns.
 - **Commits**: Use [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat:`, `fix:`, `docs:`).
 - **Testing**: Add/update tests for any functional changes.
-- **Workspace scope**: Make changes in the appropriate workspace (`apps/mobile`, `apps/web`, or `functions`).
-- **No secrets**: Never commit API keys, tokens, or credentials.
+- **Workspace scope**: Make changes in the appropriate module (`apps/mobile`, `apps/web`, `backend/`, or `functions`).
+- **Backend**: Follow Java/Spring Boot conventions. Use Lombok where appropriate.
+- **No secrets**: Never commit API keys, tokens, service account keys, or credentials.
 
 ### 4. Submit a Pull Request
 
@@ -336,7 +394,8 @@ MIT License — see [LICENSE](./LICENSE) for details.
 ## Acknowledgements
 
 - **Sri Lankan news sources**: Ada Derana, Daily Mirror, News 1st
-- **Technologies**: Firebase, Expo, React Native, Next.js, Tailwind CSS, NativeWind, Reanimated
+- **Technologies**: Spring Boot, Java, Firebase, Expo, React Native, Next.js, Tailwind CSS, NativeWind, Reanimated
+- **Tools**: IntelliJ IDEA, Maven, VS Code
 - **Community**: Sri Lankan developer community 🇱🇰
 
 ---
