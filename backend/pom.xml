@@ -24,6 +24,7 @@
         <java.version>17</java.version>
         <firebase-admin.version>9.3.0</firebase-admin.version>
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
+        <jjwt.version>0.12.5</jjwt.version>
     </properties>
 
     <!-- ─── Dependencies ─── -->
@@ -57,6 +58,12 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- WebSocket (real-time chat / data sync) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
         <!-- ══════════════════════════════════════════════
              Firebase Admin SDK
              ══════════════════════════════════════════════ -->
@@ -64,6 +71,47 @@
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>${firebase-admin.version}</version>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════════
+             JWT (JSON Web Token) — for web auth
+             ══════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════════
+             HTTP Client — for RSS / news scraping
+             ══════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </dependency>
+
+        <!-- ══════════════════════════════════════════════
+             JSON / XML Parsing — for RSS feed processing
+             ══════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
         <!-- ══════════════════════════════════════════════
