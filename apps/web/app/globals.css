@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface-900 text-white font-sans antialiased overflow-x-hidden;
+  }
+}
+
+@layer components {
+  .section-container {
+    @apply max-w-[1280px] mx-auto px-6 sm:px-8 md:px-12 w-full;
+  }
+
+  .btn-primary {
+    @apply px-6 py-2.5 rounded-full font-semibold text-surface-900 bg-button-gradient transition-all hover:opacity-90 active:scale-95 shadow-[0_0_20px_rgba(125,189,236,0.3)];
+  }
+
+  .btn-outline {
+    @apply px-6 py-2.5 rounded-full font-semibold text-white border border-white/30 transition-all hover:bg-white/5 active:scale-95;
+  }
+
+  .card-glass {
+    @apply bg-[#131A2A] rounded-2xl border border-white/5 overflow-hidden transition-all hover:border-white/10;
+  }
+}
+
+/* Base resets */
+* {
+  box-sizing: border-box;
+}
+
+/* Custom Webkit scrollbar matching the dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0d14;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a2030;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #252e42;
+}
