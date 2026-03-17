@@ -2,6 +2,7 @@ package com.infora.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Infora Backend — Spring Boot REST API entry point.
@@ -14,6 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * Uses Firebase (Firestore) as the primary database via the Firebase Admin SDK.
  */
+@EnableScheduling
 @SpringBootApplication
 public class InforaBackendApplication {
 
