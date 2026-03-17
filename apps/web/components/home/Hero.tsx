@@ -57,7 +57,7 @@ export function Hero() {
               }}
             >
               <img 
-                src="/robot.png" 
+                src="/infora.png" 
                 alt="InFora AI Mascot" 
                 className="w-full h-full object-cover object-center"
               />

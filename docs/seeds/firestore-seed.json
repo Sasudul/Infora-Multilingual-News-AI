@@ -1,0 +1,136 @@
+{
+  "newsCache": [
+    {
+      "id": "daily-news-cbsl-rates",
+      "title_en": "Central Bank Maintains Policy Interest Rates Unchanged",
+      "title_si": "මහ බැංකුව ප්‍රතිපත්ති පොලී අනුපාත නොවෙනස්ව පවත්වා ගනී",
+      "summary_en": "The Central Bank of Sri Lanka decided to maintain the Standing Deposit Facility Rate (SDFR) and Standing Lending Facility Rate (SLFR), citing stable inflation and economic recovery.",
+      "summary_si": "ශ්‍රී ලංකා මහ බැංකුව ස්ථායී උද්ධමනය සහ ආර්ථික පුනරුත්ථාපනය හේතුවෙන් ස්ථාවර තැන්පතු පහසුකම් අනුපාතය (SDFR) සහ ස්ථාවර ණය දීමේ පහසුකම් අනුපාතය (SLFR) නොවෙනස්ව පවත්වා ගැනීමට තීරණය කළේය.",
+      "source": "Daily News",
+      "sourceUrl": "https://www.dailynews.lk",
+      "category": "economy",
+      "district": "Colombo",
+      "verified": true,
+      "publishedAt": "2026-03-17T10:00:00Z"
+    },
+    {
+      "id": "ada-derana-it-exports",
+      "title_en": "Sri Lanka IT/BPO Exports Reach $1.7 Billion Milestone",
+      "title_si": "ශ්‍රී ලංකා IT/BPO අපනයන ඩොලර් බිලියන 1.7 සන්ධිස්ථානයට",
+      "summary_en": "Sri Lanka's Information Technology and Business Process Outsourcing sector has achieved $1.7 billion in export revenue, making it the 5th largest forex earner.",
+      "summary_si": "ශ්‍රී ලංකාවේ තොරතුරු තාක්ෂණ සහ ව්‍යාපාර ක්‍රියාවලි බාහිරකරණ අංශය අපනයන ආදායමෙන් ඩොලර් බිලියන 1.7ක් ලබා ඇත.",
+      "source": "Ada Derana",
+      "sourceUrl": "https://www.adaderana.lk",
+      "category": "technology",
+      "district": "Colombo",
+      "verified": true,
+      "publishedAt": "2026-03-17T08:00:00Z"
+    },
+    {
+      "id": "newsfirst-cricket-squad",
+      "title_en": "Sri Lanka Cricket Announce Squad for Upcoming Test Series",
+      "title_si": "ශ්‍රී ලංකා ක්‍රිකට් ඉදිරි ටෙස්ට් තරඟ මාලාව සඳහා කණ්ඩායම නම් කරයි",
+      "summary_en": "Sri Lanka Cricket has announced an 18-member squad for the upcoming home Test series, with a mix of experienced players and emerging talent from domestic cricket.",
+      "summary_si": "ශ්‍රී ලංකා ක්‍රිකට් ඉදිරි නිවස් ටෙස්ට් තරඟ මාලාව සඳහා පළපුරුදු ක්‍රීඩකයන් සහ නව දක්ෂතා සම්පූර්ණ සාමාජිකයන් 18 දෙනෙකුගෙන් යුත් කණ්ඩායමක්  නම් කර ඇත.",
+      "source": "NewsFirst",
+      "sourceUrl": "https://www.newsfirst.lk",
+      "category": "sports",
+      "district": "Colombo",
+      "verified": true,
+      "publishedAt": "2026-03-17T07:00:00Z"
+    }
+  ],
+  "govServices": [
+    {
+      "id": "passport",
+      "name_en": "Passport Application",
+      "name_si": "ගමන් බලපත්‍ර අයදුම්පත",
+      "name_ta": "கடவுச்சீட்டு விண்ணப்பம்",
+      "description_en": "Apply for a new passport or renew your existing one.",
+      "description_si": "නව ගමන් බලපත්‍රයක් සඳහා අයදුම් කරන්න හෝ පවතින එක අලුත් කරන්න.",
+      "description_ta": "புதிய கடவுச்சீட்டுக்கு விண்ணப்பிக்கவும் அல்லது ஏற்கனவே உள்ளதை புதுப்பிக்கவும்.",
+      "icon": "BookOpen",
+      "color": "from-blue-500 to-cyan-400",
+      "processingTime": "3-4 weeks (normal) / 1 day (urgent)",
+      "fee": "LKR 3,500 (normal) / LKR 10,000 (urgent)",
+      "officialSource": "Department of Immigration & Emigration",
+      "officialUrl": "https://www.immigration.gov.lk",
+      "documents": [
+        "National Identity Card (NIC) — original + photocopy",
+        "Birth Certificate — original + photocopy",
+        "Passport-size colour photographs (3.5cm × 4.5cm, blue background)",
+        "Completed application form (Form K35A for new / K35B for renewal)",
+        "Old passport (for renewal applications)"
+      ],
+      "steps": [
+        "Obtain form K35A (new) or K35B (renewal) from any Divisional Secretariat or download from immigration.gov.lk",
+        "Fill all sections in BLOCK CAPITALS with blue or black ink",
+        "Get the declaration certified by a Justice of Peace, Attorney-at-Law, or Notary Public",
+        "Attach NIC copy, birth certificate copy, and two colour photographs",
+        "Submit at Head Office (Battaramulla) or any Regional Passport Office",
+        "Pay the applicable fee at the counter",
+        "Collect passport after processing (track via immigration.gov.lk)"
+      ]
+    },
+    {
+      "id": "nic",
+      "name_en": "NIC Registration",
+      "name_si": "ජාතික හැඳුනුම්පත ලියාපදිංචිය",
+      "name_ta": "தேசிய அடையாள அட்டை பதிவு",
+      "description_en": "Register for your National Identity Card (applicable at age 16).",
+      "description_si": "ඔබේ ජාතික හැඳුනුම්පත සඳහා ලියාපදිංචි වන්න.",
+      "description_ta": "உங்கள் தேசிய அடையாள அட்டைக்கு பதிவு செய்யுங்கள்.",
+      "icon": "CreditCard",
+      "color": "from-violet-500 to-purple-400",
+      "processingTime": "2-4 weeks",
+      "fee": "LKR 100 (first issue) / LKR 1,000 (duplicate)",
+      "officialSource": "Department for Registration of Persons",
+      "officialUrl": "https://www.drp.gov.lk",
+      "documents": [
+        "Birth Certificate — original",
+        "Grama Niladhari (GN) certification letter",
+        "Three passport-size photographs",
+        "Parent's NIC copies (for first-time applicants)",
+        "Marriage certificate (if name changed)"
+      ],
+      "steps": [
+        "Obtain application form from Grama Niladhari or Divisional Secretariat",
+        "Fill the form completely (get GN certification)",
+        "Attach birth certificate, photographs, and parent's NIC copies",
+        "Submit at Divisional Secretariat office in your area",
+        "Receive acknowledgement receipt with reference number",
+        "Collect NIC after processing (check status via drp.gov.lk)"
+      ]
+    },
+    {
+      "id": "driving-license",
+      "name_en": "Driving License",
+      "name_si": "රියදුරු බලපත්‍රය",
+      "name_ta": "ஓட்டுநர் உரிமம்",
+      "description_en": "Apply for a new driving license or renew an existing one.",
+      "description_si": "නව රියදුරු බලපත්‍රයක් සඳහා අයදුම් කරන්න.",
+      "description_ta": "புதிய ஓட்டுநர் உரிமத்திற்கு விண்ணப்பிக்கவும்.",
+      "icon": "Car",
+      "color": "from-emerald-500 to-green-400",
+      "processingTime": "1-2 weeks",
+      "fee": "LKR 800 (learner's) / LKR 1,500 (full license)",
+      "officialSource": "Department of Motor Traffic",
+      "officialUrl": "https://www.motortraffic.gov.lk",
+      "documents": [
+        "National Identity Card — original + photocopy",
+        "Medical certificate from a government-approved doctor",
+        "Two passport-size photographs",
+        "Learner's permit (valid for at least 3 months)",
+        "Revenue stamp (LKR 25)"
+      ],
+      "steps": [
+        "Apply for a Learner's Permit at DMT office with NIC and medical certificate",
+        "Pass the written/oral examination at DMT",
+        "Practice driving for minimum 3 months with a qualified instructor",
+        "Apply for the practical driving test",
+        "Pass the practical driving test at DMT",
+        "Collect your driving license after processing"
+      ]
+    }
+  ]
+}

@@ -1,19 +1,18 @@
 {
   "expo": {
-    "name": "Infora",
+    "name": "Infora AI",
     "slug": "infora-mobile",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
+    "scheme": "infora",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0A0D14"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.infora.mobile"
@@ -21,18 +20,13 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0A0D14"
       },
       "package": "com.infora.mobile"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [],
-    "extra": {
-      "eas": {
-        "projectId": "your-eas-project-id"
-      }
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
