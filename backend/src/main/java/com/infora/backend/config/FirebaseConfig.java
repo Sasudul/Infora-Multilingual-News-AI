@@ -8,7 +8,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.cloud.StorageClient;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,29 +21,36 @@ import java.io.IOException;
  * Initializes the Firebase Admin SDK and exposes Firestore, FirebaseAuth,
  * and StorageClient as Spring-managed beans.
  *
- * Requires a service account JSON key file — path set via:
- *   FIREBASE_SERVICE_ACCOUNT_KEY (env variable) or
- *   firebase.service-account-key (application.properties)
+ * Handles DevTools restarts properly by cleaning up stale Firebase instances.
  */
-@Slf4j
 @Configuration
 public class FirebaseConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(FirebaseConfig.class);
 
     @Value("${firebase.service-account-key:src/main/resources/firebase-service-account.json}")
     private String serviceAccountKeyPath;
 
     @PostConstruct
     public void initFirebase() throws IOException {
-        if (FirebaseApp.getApps().isEmpty()) {
-            FileInputStream serviceAccount = new FileInputStream(serviceAccountKeyPath);
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
-            FirebaseApp.initializeApp(options);
-            log.info("✅ Firebase Admin SDK initialized successfully");
+        // Clean up any existing FirebaseApp (handles DevTools restart)
+        if (!FirebaseApp.getApps().isEmpty()) {
+            log.info("Cleaning up existing Firebase instance (DevTools restart detected)");
+            try {
+                FirebaseApp.getInstance().delete();
+            } catch (Exception e) {
+                log.debug("Firebase cleanup: {}", e.getMessage());
+            }
         }
+
+        FileInputStream serviceAccount = new FileInputStream(serviceAccountKeyPath);
+
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build();
+
+        FirebaseApp.initializeApp(options);
+        log.info("✅ Firebase Admin SDK initialized successfully");
     }
 
     @Bean

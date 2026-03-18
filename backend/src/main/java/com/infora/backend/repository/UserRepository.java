@@ -3,21 +3,25 @@ package com.infora.backend.repository;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.infora.backend.model.User;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
 @Repository
-@RequiredArgsConstructor
 public class UserRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(UserRepository.class);
 
     private final Firestore firestore;
     private static final String COLLECTION = "users";
+
+    public UserRepository(Firestore firestore) {
+        this.firestore = firestore;
+    }
 
     public User save(String userId, User user) {
         try {
@@ -73,14 +77,14 @@ public class UserRepository {
     }
 
     private User documentToUser(DocumentSnapshot doc) {
-        return User.builder()
-                .id(doc.getId())
-                .name(doc.getString("name"))
-                .email(doc.getString("email"))
-                .preferredLanguage(doc.getString("preferredLanguage"))
-                .createdAt(doc.getString("createdAt") != null
+        return new User(
+                doc.getId(),
+                doc.getString("name"),
+                doc.getString("email"),
+                doc.getString("preferredLanguage"),
+                doc.getString("createdAt") != null
                         ? Instant.parse(doc.getString("createdAt"))
-                        : Instant.now())
-                .build();
+                        : Instant.now()
+        );
     }
 }

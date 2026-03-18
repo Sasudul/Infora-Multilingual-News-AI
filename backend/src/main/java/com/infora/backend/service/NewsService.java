@@ -2,19 +2,23 @@ package com.infora.backend.service;
 
 import com.infora.backend.model.NewsArticle;
 import com.infora.backend.repository.NewsRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class NewsService {
 
+    private static final Logger log = LoggerFactory.getLogger(NewsService.class);
+
     private final NewsRepository newsRepository;
+
+    public NewsService(NewsRepository newsRepository) {
+        this.newsRepository = newsRepository;
+    }
 
     public List<NewsArticle> getLatestNews(int limit) {
         return newsRepository.findAll(Math.min(limit, 50));

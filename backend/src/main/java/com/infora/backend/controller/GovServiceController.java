@@ -5,7 +5,6 @@ import com.infora.backend.model.GovService;
 import com.infora.backend.service.GovServiceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +12,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/services")
-@RequiredArgsConstructor
 @Tag(name = "Government Services", description = "Government service guidance endpoints")
 public class GovServiceController {
 
     private final GovServiceService govServiceService;
+
+    public GovServiceController(GovServiceService govServiceService) {
+        this.govServiceService = govServiceService;
+    }
 
     @GetMapping
     @Operation(summary = "Get all government services")

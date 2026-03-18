@@ -1,26 +1,26 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n, type LangCode } from '@/i18n';
+import { CHAT_SUGGESTIONS, CHAT_SUGGESTIONS_SI, CHAT_SUGGESTIONS_TA, GOV_SERVICES, LANGUAGES } from '@/lib/constants';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Send,
-  Sparkles,
-  Newspaper,
-  BookOpen,
-  CreditCard,
-  CloudSun,
-  Landmark,
-  Building2,
-  Bot,
-  User,
   ArrowRight,
   BadgeCheck,
+  BookOpen,
+  Bot,
+  Building2,
+  CloudSun,
+  CreditCard,
   ExternalLink,
+  Landmark,
   Mic,
   MicOff,
+  Newspaper,
+  Send,
+  Sparkles,
+  User,
 } from 'lucide-react';
-import { CHAT_SUGGESTIONS, CHAT_SUGGESTIONS_SI, CHAT_SUGGESTIONS_TA, LANGUAGES, GOV_SERVICES } from '@/lib/constants';
-import { useI18n, type LangCode } from '@/i18n';
+import { useEffect, useRef, useState } from 'react';
 
 const iconMap: Record<string, any> = {
   Newspaper, BookOpen, CreditCard, CloudSun, Landmark, Building2,
@@ -236,16 +236,13 @@ export default function ChatPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-16"
             >
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand-500/25">
-                <Sparkles size={28} className="text-white" />
-              </div>
+            
               <h2 className="font-display text-2xl font-bold text-white mb-2">
                 {t.chat.welcomeTitle} <span className="gradient-text">Infora</span>
               </h2>
               <p className="text-white/40 mb-10 max-w-md mx-auto">
                 {t.chat.welcomeSubtitle}
               </p>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
                 {suggestions.map((s) => {
                   const Icon = iconMap[s.icon] || Sparkles;

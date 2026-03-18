@@ -6,8 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,12 +20,16 @@ import java.io.IOException;
  * Currently in permissive mode — logs warnings but allows requests through.
  * To enforce auth: return 401 when token is missing/invalid.
  */
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public class FirebaseAuthFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(FirebaseAuthFilter.class);
+
     private final FirebaseAuth firebaseAuth;
+
+    public FirebaseAuthFilter(FirebaseAuth firebaseAuth) {
+        this.firebaseAuth = firebaseAuth;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

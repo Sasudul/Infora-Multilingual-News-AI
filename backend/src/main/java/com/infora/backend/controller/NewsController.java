@@ -6,7 +6,6 @@ import com.infora.backend.service.NewsService;
 import com.infora.backend.service.NewsScraperService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,12 +13,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/news")
-@RequiredArgsConstructor
 @Tag(name = "News", description = "News retrieval endpoints")
 public class NewsController {
 
     private final NewsService newsService;
     private final NewsScraperService newsScraperService;
+
+    public NewsController(NewsService newsService, NewsScraperService newsScraperService) {
+        this.newsService = newsService;
+        this.newsScraperService = newsScraperService;
+    }
 
     @GetMapping
     @Operation(summary = "Get latest news articles")

@@ -4,23 +4,26 @@ import com.infora.backend.dto.UserRequest;
 import com.infora.backend.exception.ResourceNotFoundException;
 import com.infora.backend.model.User;
 import com.infora.backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public User createOrUpdate(String userId, UserRequest request) {
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .preferredLanguage(request.getPreferredLanguage())
-                .build();
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPreferredLanguage(request.getPreferredLanguage());
         return userRepository.save(userId, user);
     }
 
