@@ -3,33 +3,31 @@ package com.infora.backend.repository;
 import com.google.cloud.firestore.*;
 import com.infora.backend.model.ChatSession;
 import com.infora.backend.model.Message;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Repository
-@RequiredArgsConstructor
 public class ChatRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatRepository.class);
 
     private final Firestore firestore;
     private static final String COLLECTION = "chatSessions";
 
+    public ChatRepository(Firestore firestore) {
+        this.firestore = firestore;
+    }
+
     public ChatSession create(String userId, String language) {
         try {
             String sessionId = UUID.randomUUID().toString();
-            ChatSession session = ChatSession.builder()
-                    .id(sessionId)
-                    .userId(userId)
-                    .language(language)
-                    .messages(new ArrayList<>())
-                    .createdAt(Instant.now())
-                    .updatedAt(Instant.now())
-                    .build();
+            ChatSession session = new ChatSession(
+                    sessionId, userId, language, new ArrayList<>(), Instant.now(), Instant.now());
 
             Map<String, Object> data = Map.of(
                     "userId", userId,
@@ -115,26 +113,27 @@ public class ChatRepository {
 
         List<Message> messages = new ArrayList<>();
         if (rawMessages != null) {
-            messages = rawMessages.stream().map(m -> Message.builder()
-                    .role((String) m.get("role"))
-                    .content((String) m.get("content"))
-                    .type((String) m.getOrDefault("type", "text"))
-                    .timestamp(m.get("timestamp") != null
-                            ? Instant.parse((String) m.get("timestamp"))
-                            : Instant.now())
-                    .build()
-            ).collect(Collectors.toList());
+            messages = rawMessages.stream().map(m -> {
+                Message msg = new Message();
+                msg.setRole((String) m.get("role"));
+                msg.setContent((String) m.get("content"));
+                msg.setType((String) m.getOrDefault("type", "text"));
+                msg.setTimestamp(m.get("timestamp") != null
+                        ? Instant.parse((String) m.get("timestamp"))
+                        : Instant.now());
+                return msg;
+            }).collect(Collectors.toList());
         }
 
-        return ChatSession.builder()
-                .id(doc.getId())
-                .userId(doc.getString("userId"))
-                .language(doc.getString("language"))
-                .messages(messages)
-                .createdAt(doc.getString("createdAt") != null
-                        ? Instant.parse(doc.getString("createdAt")) : Instant.now())
-                .updatedAt(doc.getString("updatedAt") != null
-                        ? Instant.parse(doc.getString("updatedAt")) : Instant.now())
-                .build();
+        return new ChatSession(
+                doc.getId(),
+                doc.getString("userId"),
+                doc.getString("language"),
+                messages,
+                doc.getString("createdAt") != null
+                        ? Instant.parse(doc.getString("createdAt")) : Instant.now(),
+                doc.getString("updatedAt") != null
+                        ? Instant.parse(doc.getString("updatedAt")) : Instant.now()
+        );
     }
 }

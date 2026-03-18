@@ -2,20 +2,24 @@ package com.infora.backend.repository;
 
 import com.google.cloud.firestore.*;
 import com.infora.backend.model.GovService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Repository
-@RequiredArgsConstructor
 public class GovServiceRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(GovServiceRepository.class);
 
     private final Firestore firestore;
     private static final String COLLECTION = "govServices";
+
+    public GovServiceRepository(Firestore firestore) {
+        this.firestore = firestore;
+    }
 
     @SuppressWarnings("unchecked")
     public List<GovService> findAll() {
@@ -73,22 +77,22 @@ public class GovServiceRepository {
 
     @SuppressWarnings("unchecked")
     private GovService documentToService(DocumentSnapshot doc) {
-        return GovService.builder()
-                .id(doc.getId())
-                .nameEn(doc.getString("name_en"))
-                .nameSi(doc.getString("name_si"))
-                .nameTa(doc.getString("name_ta"))
-                .descriptionEn(doc.getString("description_en"))
-                .descriptionSi(doc.getString("description_si"))
-                .descriptionTa(doc.getString("description_ta"))
-                .icon(doc.getString("icon"))
-                .color(doc.getString("color"))
-                .processingTime(doc.getString("processingTime"))
-                .fee(doc.getString("fee"))
-                .officialSource(doc.getString("officialSource"))
-                .officialUrl(doc.getString("officialUrl"))
-                .documents((List<String>) doc.get("documents"))
-                .steps((List<String>) doc.get("steps"))
-                .build();
+        GovService svc = new GovService();
+        svc.setId(doc.getId());
+        svc.setNameEn(doc.getString("name_en"));
+        svc.setNameSi(doc.getString("name_si"));
+        svc.setNameTa(doc.getString("name_ta"));
+        svc.setDescriptionEn(doc.getString("description_en"));
+        svc.setDescriptionSi(doc.getString("description_si"));
+        svc.setDescriptionTa(doc.getString("description_ta"));
+        svc.setIcon(doc.getString("icon"));
+        svc.setColor(doc.getString("color"));
+        svc.setProcessingTime(doc.getString("processingTime"));
+        svc.setFee(doc.getString("fee"));
+        svc.setOfficialSource(doc.getString("officialSource"));
+        svc.setOfficialUrl(doc.getString("officialUrl"));
+        svc.setDocuments((List<String>) doc.get("documents"));
+        svc.setSteps((List<String>) doc.get("steps"));
+        return svc;
     }
 }

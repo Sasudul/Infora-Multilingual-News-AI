@@ -3,11 +3,11 @@ package com.infora.backend.service;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.infora.backend.model.NewsArticle;
 import com.infora.backend.repository.NewsRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -20,12 +20,16 @@ import java.util.concurrent.TimeUnit;
  * Scheduled service that scrapes RSS feeds from verified Sri Lankan news sources,
  * parses the XML, and stores articles in Firestore.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class NewsScraperService {
 
+    private static final Logger log = LoggerFactory.getLogger(NewsScraperService.class);
+
     private final NewsRepository newsRepository;
+
+    public NewsScraperService(NewsRepository newsRepository) {
+        this.newsRepository = newsRepository;
+    }
 
     @Value("${news.sources.ada-derana:https://www.adaderana.lk/rss.php}")
     private String adaDeranaUrl;
@@ -34,21 +38,24 @@ public class NewsScraperService {
     private String dailyMirrorUrl;
 
     private final OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .followRedirects(true)
             .build();
+
+    private final XmlMapper xmlMapper = new XmlMapper();
 
     /**
      * Runs every 15 minutes to fetch latest news articles.
-     * Configurable via application.properties.
+     * Initial delay of 10 seconds to let the app fully start.
      */
-    @Scheduled(fixedRateString = "${news.scraper.interval:900000}")
+    @Scheduled(fixedRateString = "${news.scraper.interval:900000}", initialDelay = 10000)
     public void scrapeAllSources() {
         log.info("Starting news scrape cycle...");
         int total = 0;
         total += scrapeRssFeed("Ada Derana", adaDeranaUrl, "https://www.adaderana.lk");
         total += scrapeRssFeed("Daily Mirror", dailyMirrorUrl, "https://www.dailymirror.lk");
-        log.info("News scrape cycle complete. Total articles processed: {}", total);
+        log.info("News scrape cycle complete. Total articles saved: {}", total);
     }
 
     @SuppressWarnings("unchecked")
@@ -56,7 +63,8 @@ public class NewsScraperService {
         try {
             Request request = new Request.Builder()
                     .url(feedUrl)
-                    .header("User-Agent", "Infora-NewsBot/1.0")
+                    .header("User-Agent", "Mozilla/5.0 (compatible; Infora-NewsBot/1.0)")
+                    .header("Accept", "application/rss+xml, application/xml, text/xml, */*")
                     .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
@@ -66,8 +74,33 @@ public class NewsScraperService {
                 }
 
                 String xml = response.body().string();
-                XmlMapper xmlMapper = new XmlMapper();
-                Map<String, Object> rss = xmlMapper.readValue(xml, Map.class);
+
+                // Clean common XML issues
+                xml = xml.trim();
+                if (xml.startsWith("\uFEFF")) {
+                    xml = xml.substring(1); // Remove BOM
+                }
+
+                // Try to parse as RSS
+                Map<String, Object> rss;
+                try {
+                    rss = xmlMapper.readValue(xml, Map.class);
+                } catch (Exception parseEx) {
+                    // Try removing problematic characters before the XML declaration
+                    int xmlStart = xml.indexOf("<?xml");
+                    if (xmlStart > 0) {
+                        xml = xml.substring(xmlStart);
+                        try {
+                            rss = xmlMapper.readValue(xml, Map.class);
+                        } catch (Exception e2) {
+                            log.warn("Cannot parse RSS from {}: {}", sourceName, e2.getMessage());
+                            return 0;
+                        }
+                    } else {
+                        log.warn("Cannot parse RSS from {}: {}", sourceName, parseEx.getMessage());
+                        return 0;
+                    }
+                }
 
                 Object channelObj = rss.get("channel");
                 if (channelObj == null) {
@@ -77,13 +110,19 @@ public class NewsScraperService {
 
                 Map<String, Object> channel = (Map<String, Object>) channelObj;
                 Object itemsObj = channel.get("item");
-                if (itemsObj == null) return 0;
+                if (itemsObj == null) {
+                    log.warn("No items found in RSS from {}", sourceName);
+                    return 0;
+                }
 
                 List<Map<String, Object>> items;
                 if (itemsObj instanceof List) {
                     items = (List<Map<String, Object>>) itemsObj;
-                } else {
+                } else if (itemsObj instanceof Map) {
                     items = List.of((Map<String, Object>) itemsObj);
+                } else {
+                    log.warn("Unexpected items format in RSS from {}", sourceName);
+                    return 0;
                 }
 
                 int count = 0;
@@ -98,28 +137,32 @@ public class NewsScraperService {
                         // Clean HTML from description
                         if (description != null) {
                             description = description.replaceAll("<[^>]*>", "").trim();
+                            description = description.replaceAll("&amp;", "&")
+                                    .replaceAll("&lt;", "<")
+                                    .replaceAll("&gt;", ">")
+                                    .replaceAll("&quot;", "\"")
+                                    .replaceAll("&#39;", "'");
                             if (description.length() > 300) {
                                 description = description.substring(0, 297) + "...";
                             }
                         }
 
-                        NewsArticle article = NewsArticle.builder()
-                                .id(generateArticleId(sourceName, title))
-                                .titleEn(title)
-                                .summaryEn(description)
-                                .source(sourceName)
-                                .sourceUrl(sourceUrl)
-                                .url(link)
-                                .category(categorizeArticle(title))
-                                .district("Colombo")
-                                .publishedAt(Instant.now())
-                                .verified(true)
-                                .build();
+                        NewsArticle article = new NewsArticle();
+                        article.setId(generateArticleId(sourceName, title));
+                        article.setTitleEn(title.trim());
+                        article.setSummaryEn(description);
+                        article.setSource(sourceName);
+                        article.setSourceUrl(sourceUrl);
+                        article.setUrl(link);
+                        article.setCategory(categorizeArticle(title));
+                        article.setDistrict("Colombo");
+                        article.setPublishedAt(Instant.now());
+                        article.setVerified(true);
 
                         newsRepository.save(article);
                         count++;
                     } catch (Exception e) {
-                        log.debug("Skipping malformed item from {}", sourceName);
+                        log.debug("Skipping item from {}: {}", sourceName, e.getMessage());
                     }
                 }
 
@@ -134,7 +177,19 @@ public class NewsScraperService {
 
     private String getStringValue(Map<String, Object> map, String key) {
         Object val = map.get(key);
-        return val != null ? val.toString() : null;
+        if (val == null) return null;
+        if (val instanceof String) return (String) val;
+        if (val instanceof Map) {
+            // Some RSS feeds wrap text in nested elements
+            Map<?, ?> nested = (Map<?, ?>) val;
+            Object content = nested.get("");
+            if (content != null) return content.toString();
+            // Try getting first value
+            for (Object v : nested.values()) {
+                if (v instanceof String) return (String) v;
+            }
+        }
+        return val.toString();
     }
 
     private String generateArticleId(String source, String title) {
@@ -143,22 +198,23 @@ public class NewsScraperService {
     }
 
     /**
-     * Basic keyword-based categorization. In production, use NLP classification.
+     * Basic keyword-based categorization.
      */
     private String categorizeArticle(String title) {
         String t = title.toLowerCase();
         if (t.contains("parliament") || t.contains("minister") || t.contains("election") ||
-            t.contains("president") || t.contains("government")) return "politics";
+            t.contains("president") || t.contains("government") || t.contains("mp ") ||
+            t.contains("cabinet") || t.contains("opposition")) return "politics";
         if (t.contains("economy") || t.contains("bank") || t.contains("rupee") ||
-            t.contains("export") || t.contains("gdp") || t.contains("inflation")) return "economy";
+            t.contains("export") || t.contains("gdp") || t.contains("inflation") ||
+            t.contains("tax") || t.contains("budget") || t.contains("revenue")) return "economy";
         if (t.contains("cricket") || t.contains("sport") || t.contains("rugby") ||
-            t.contains("olympics") || t.contains("match")) return "sports";
+            t.contains("olympics") || t.contains("match") || t.contains("football")) return "sports";
         if (t.contains("tech") || t.contains("digital") || t.contains("software") ||
-            t.contains("internet") || t.contains("ai")) return "technology";
-        if (t.contains("colombo") || t.contains("kandy") || t.contains("galle") ||
-            t.contains("jaffna") || t.contains("district")) return "local";
+            t.contains("internet") || t.contains("ai") || t.contains("startup")) return "technology";
         if (t.contains("india") || t.contains("china") || t.contains("us ") ||
-            t.contains("world") || t.contains("global")) return "international";
+            t.contains("world") || t.contains("global") || t.contains("un ") ||
+            t.contains("russia") || t.contains("ukraine")) return "international";
         return "local";
     }
 }

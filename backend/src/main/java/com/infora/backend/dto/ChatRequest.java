@@ -1,21 +1,27 @@
 package com.infora.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ChatRequest {
     @NotBlank(message = "Message content is required")
     private String message;
 
     private String sessionId;
 
-    @Builder.Default
     private String language = "en"; // "en", "si", "ta"
+
+    public ChatRequest() {}
+
+    public ChatRequest(String message, String sessionId, String language) {
+        this.message = message;
+        this.sessionId = sessionId;
+        this.language = language;
+    }
+
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 }

@@ -2,21 +2,25 @@ package com.infora.backend.repository;
 
 import com.google.cloud.firestore.*;
 import com.infora.backend.model.NewsArticle;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Repository
-@RequiredArgsConstructor
 public class NewsRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(NewsRepository.class);
 
     private final Firestore firestore;
     private static final String COLLECTION = "newsCache";
+
+    public NewsRepository(Firestore firestore) {
+        this.firestore = firestore;
+    }
 
     public NewsArticle save(NewsArticle article) {
         try {
@@ -125,21 +129,21 @@ public class NewsRepository {
     }
 
     private NewsArticle documentToArticle(DocumentSnapshot doc) {
-        return NewsArticle.builder()
-                .id(doc.getId())
-                .titleEn(doc.getString("title_en"))
-                .titleSi(doc.getString("title_si"))
-                .summaryEn(doc.getString("summary_en"))
-                .summarySi(doc.getString("summary_si"))
-                .source(doc.getString("source"))
-                .sourceUrl(doc.getString("sourceUrl"))
-                .url(doc.getString("url"))
-                .imageUrl(doc.getString("imageUrl"))
-                .publishedAt(doc.getString("publishedAt") != null
-                        ? Instant.parse(doc.getString("publishedAt")) : null)
-                .district(doc.getString("district"))
-                .category(doc.getString("category"))
-                .verified(Boolean.TRUE.equals(doc.getBoolean("verified")))
-                .build();
+        NewsArticle article = new NewsArticle();
+        article.setId(doc.getId());
+        article.setTitleEn(doc.getString("title_en"));
+        article.setTitleSi(doc.getString("title_si"));
+        article.setSummaryEn(doc.getString("summary_en"));
+        article.setSummarySi(doc.getString("summary_si"));
+        article.setSource(doc.getString("source"));
+        article.setSourceUrl(doc.getString("sourceUrl"));
+        article.setUrl(doc.getString("url"));
+        article.setImageUrl(doc.getString("imageUrl"));
+        article.setPublishedAt(doc.getString("publishedAt") != null
+                ? Instant.parse(doc.getString("publishedAt")) : null);
+        article.setDistrict(doc.getString("district"));
+        article.setCategory(doc.getString("category"));
+        article.setVerified(Boolean.TRUE.equals(doc.getBoolean("verified")));
+        return article;
     }
 }

@@ -7,8 +7,8 @@ import com.infora.backend.model.Message;
 import com.infora.backend.model.NewsArticle;
 import com.infora.backend.model.GovService;
 import com.infora.backend.repository.ChatRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -23,14 +23,20 @@ import java.util.stream.Collectors;
  * In production, this integrates with Rasa NLP for proper
  * intent classification and entity extraction.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ChatService {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     private final ChatRepository chatRepository;
     private final NewsService newsService;
     private final GovServiceService govServiceService;
+
+    public ChatService(ChatRepository chatRepository, NewsService newsService, GovServiceService govServiceService) {
+        this.chatRepository = chatRepository;
+        this.newsService = newsService;
+        this.govServiceService = govServiceService;
+    }
 
     public ChatResponse processMessage(String userId, ChatRequest request) {
         // Get or create session
@@ -43,12 +49,11 @@ public class ChatService {
         }
 
         // Save user message
-        Message userMsg = Message.builder()
-                .role("user")
-                .content(request.getMessage())
-                .type("text")
-                .timestamp(Instant.now())
-                .build();
+        Message userMsg = new Message();
+        userMsg.setRole("user");
+        userMsg.setContent(request.getMessage());
+        userMsg.setType("text");
+        userMsg.setTimestamp(Instant.now());
         chatRepository.addMessage(session.getId(), userMsg);
 
         // Process intent and generate response
@@ -57,12 +62,11 @@ public class ChatService {
         response.setSessionId(session.getId());
 
         // Save assistant response
-        Message assistantMsg = Message.builder()
-                .role("assistant")
-                .content(response.getReply().getContent())
-                .type(response.getCards() != null && !response.getCards().isEmpty() ? "card" : "text")
-                .timestamp(Instant.now())
-                .build();
+        Message assistantMsg = new Message();
+        assistantMsg.setRole("assistant");
+        assistantMsg.setContent(response.getReply().getContent());
+        assistantMsg.setType(response.getCards() != null && !response.getCards().isEmpty() ? "card" : "text");
+        assistantMsg.setTimestamp(Instant.now());
         chatRepository.addMessage(session.getId(), assistantMsg);
 
         return response;
@@ -99,23 +103,25 @@ public class ChatService {
             List<NewsArticle> articles = newsService.getLatestNews(3);
             if (!articles.isEmpty()) {
                 cards = articles.stream()
-                        .map(a -> ChatResponse.ResponseCard.builder()
-                                .title(a.getTitleEn() != null ? a.getTitleEn() : "News Article")
-                                .description(a.getSummaryEn() != null ? a.getSummaryEn() : "")
-                                .type("news")
-                                .source(a.getSource())
-                                .sourceUrl(a.getSourceUrl())
-                                .verified(a.isVerified())
-                                .build())
+                        .map(a -> {
+                            ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
+                            card.setTitle(a.getTitleEn() != null ? a.getTitleEn() : "News Article");
+                            card.setDescription(a.getSummaryEn() != null ? a.getSummaryEn() : "");
+                            card.setType("news");
+                            card.setSource(a.getSource());
+                            card.setSourceUrl(a.getSourceUrl());
+                            card.setVerified(a.isVerified());
+                            return card;
+                        })
                         .collect(Collectors.toList());
             } else {
-                cards.add(ChatResponse.ResponseCard.builder()
-                        .title("Latest Sri Lankan News")
-                        .description("Check verified sources: Ada Derana, Daily Mirror, NewsFirst")
-                        .type("news")
-                        .source("Multiple Sources")
-                        .verified(true)
-                        .build());
+                ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
+                card.setTitle("Latest Sri Lankan News");
+                card.setDescription("Check verified sources: Ada Derana, Daily Mirror, NewsFirst");
+                card.setType("news");
+                card.setSource("Multiple Sources");
+                card.setVerified(true);
+                cards.add(card);
             }
 
         } else if (containsPassportIntent(query)) {
@@ -144,25 +150,28 @@ public class ChatService {
                     "I can help you with Sri Lankan news, government services, and general information. Try asking about passports, NIC registration, latest news, or any government service!",
                     "මට ශ්‍රී ලංකාවේ පුවත්, රජයේ සේවා සහ සාමාන්‍ය තොරතුරු සම්බන්ධයෙන් ඔබට උදව් කළ හැකිය.",
                     "இலங்கை செய்திகள், அரசாங்க சேவைகள் மற்றும் பொதுவான தகவல்களில் நான் உங்களுக்கு உதவ முடியும்.");
-            cards.add(ChatResponse.ResponseCard.builder()
-                    .title("Browse News").description("Get the latest headlines from verified Sri Lankan sources.")
-                    .type("info").build());
-            cards.add(ChatResponse.ResponseCard.builder()
-                    .title("Government Services").description("Step-by-step guides for passports, NIC, driving license & more.")
-                    .type("info").build());
+            ChatResponse.ResponseCard card1 = new ChatResponse.ResponseCard();
+            card1.setTitle("Browse News");
+            card1.setDescription("Get the latest headlines from verified Sri Lankan sources.");
+            card1.setType("info");
+            cards.add(card1);
+            ChatResponse.ResponseCard card2 = new ChatResponse.ResponseCard();
+            card2.setTitle("Government Services");
+            card2.setDescription("Step-by-step guides for passports, NIC, driving license & more.");
+            card2.setType("info");
+            cards.add(card2);
         }
 
-        Message reply = Message.builder()
-                .role("assistant")
-                .content(replyText)
-                .type(cards.isEmpty() ? "text" : "card")
-                .timestamp(Instant.now())
-                .build();
+        Message reply = new Message();
+        reply.setRole("assistant");
+        reply.setContent(replyText);
+        reply.setType(cards.isEmpty() ? "text" : "card");
+        reply.setTimestamp(Instant.now());
 
-        return ChatResponse.builder()
-                .reply(reply)
-                .cards(cards)
-                .build();
+        ChatResponse chatResponse = new ChatResponse();
+        chatResponse.setReply(reply);
+        chatResponse.setCards(cards);
+        return chatResponse;
     }
 
     private List<ChatResponse.ResponseCard> getServiceCards(String serviceId) {
@@ -171,24 +180,24 @@ public class ChatService {
             GovService svc = govServiceService.getService(serviceId);
             if (svc.getSteps() != null) {
                 for (int i = 0; i < Math.min(svc.getSteps().size(), 3); i++) {
-                    cards.add(ChatResponse.ResponseCard.builder()
-                            .title("Step " + (i + 1))
-                            .description(svc.getSteps().get(i))
-                            .type("service")
-                            .source(svc.getOfficialSource())
-                            .sourceUrl(svc.getOfficialUrl())
-                            .verified(true)
-                            .build());
+                    ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
+                    card.setTitle("Step " + (i + 1));
+                    card.setDescription(svc.getSteps().get(i));
+                    card.setType("service");
+                    card.setSource(svc.getOfficialSource());
+                    card.setSourceUrl(svc.getOfficialUrl());
+                    card.setVerified(true);
+                    cards.add(card);
                 }
             }
         } catch (Exception e) {
             log.warn("Service not found in DB, using fallback: {}", serviceId);
-            cards.add(ChatResponse.ResponseCard.builder()
-                    .title("Service Guide")
-                    .description("Visit the official government website for detailed instructions.")
-                    .type("service")
-                    .verified(true)
-                    .build());
+            ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
+            card.setTitle("Service Guide");
+            card.setDescription("Visit the official government website for detailed instructions.");
+            card.setType("service");
+            card.setVerified(true);
+            cards.add(card);
         }
         return cards;
     }

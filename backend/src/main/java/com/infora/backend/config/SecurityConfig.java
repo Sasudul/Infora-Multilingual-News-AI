@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * Spring Security configuration.
@@ -15,13 +16,16 @@ import org.springframework.security.web.SecurityFilterChain;
  *  - CSRF disabled (stateless REST API)
  *  - Sessions disabled (stateless)
  *  - All endpoints permitted (TODO: add Firebase token filter)
- *
- * In a future iteration, a custom Firebase Authentication filter
- * should be added to verify ID tokens on protected endpoints.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final CorsConfigurationSource corsConfigurationSource;
+
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource) {
+        this.corsConfigurationSource = corsConfigurationSource;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -29,8 +33,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .cors(cors -> cors.configurationSource(
-                new CorsConfig().corsConfigurationSource()))
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers(
