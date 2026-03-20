@@ -1,9 +1,10 @@
+import { Footer } from '@/components/layout/Footer';
+import { Navbar } from '@/components/layout/Navbar';
+import { I18nProvider } from '@/i18n';
+import { AuthProvider } from '@/lib/auth';
 import type { Metadata } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 import './globals.css';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
-import { I18nProvider } from '@/i18n';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -18,7 +19,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'Infora — Multilingual AI for Sri Lanka',
+  title: 'Infora ',
   description:
     'Your intelligent assistant for Sri Lankan news retrieval, government service guidance, and multilingual conversations in Sinhala, Tamil, and English.',
   keywords: [
@@ -40,12 +41,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body className="min-h-screen flex flex-col">
-        <I18nProvider>
-          <div className="noise-overlay" />
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </I18nProvider>
+        <AuthProvider>
+          <I18nProvider>
+            <div className="noise-overlay" />
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </I18nProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -3,8 +3,14 @@
 import { useI18n, type LangCode } from '@/i18n';
 import { CHAT_SUGGESTIONS, CHAT_SUGGESTIONS_SI, CHAT_SUGGESTIONS_TA, GOV_SERVICES, LANGUAGES } from '@/lib/constants';
 import { chatApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Menu,
+  Plus,
+  MessageSquare,
+  Trash2,
+  X,
   ArrowRight,
   BadgeCheck,
   BookOpen,
@@ -114,12 +120,68 @@ function getDemo(query: string, lang: LangCode): { text: string; cards: Response
 
 export default function ChatPage() {
   const { lang, setLang, t } = useI18n();
+  const { user } = useAuth();
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      loadSessions();
+    }
+  }, [user]);
+
+  const loadSessions = async () => {
+    try {
+      const data = await chatApi.getSessions();
+      setSessions(data.sort((a: any, b: any) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()));
+    } catch (e) {
+      console.error('Failed to load sessions', e);
+    }
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setCurrentSessionId(null);
+    setIsSidebarOpen(false);
+  };
+
+  const loadSession = async (id: string) => {
+    try {
+      const data = await chatApi.getSession(id);
+      setCurrentSessionId(data.id);
+      setMessages(
+        data.messages.map((m: any) => ({
+          ...m,
+          id: Math.random().toString(),
+          timestamp: new Date(m.timestamp),
+        }))
+      );
+      setIsSidebarOpen(false);
+    } catch (e) {
+      console.error('Failed to load session', e);
+    }
+  };
+
+  const deleteSession = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await chatApi.deleteSession(id);
+      if (currentSessionId === id) {
+        startNewChat();
+      }
+      loadSessions();
+    } catch (error) {
+       console.error('Failed to delete session', error);
+    }
+  };
 
   const suggestions = lang === 'si' ? CHAT_SUGGESTIONS_SI : lang === 'ta' ? CHAT_SUGGESTIONS_TA : CHAT_SUGGESTIONS;
 
@@ -140,7 +202,11 @@ export default function ChatPage() {
     setIsTyping(true);
 
     try {
-      const response = await chatApi.sendMessage(text, undefined, lang);
+      const response = await chatApi.sendMessage(text, currentSessionId || undefined, lang);
+      if (response.sessionId && !currentSessionId) {
+        setCurrentSessionId(response.sessionId);
+        loadSessions(); // update sidebar
+      }
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -210,11 +276,77 @@ export default function ChatPage() {
   const isEmpty = messages.length === 0;
 
   return (
-    <div className="min-h-screen pt-20 flex flex-col bg-surface-900">
-      {/* Header bar */}
-      <div className="border-b border-white/[0.06] bg-surface-900/80 backdrop-blur-xl">
+    <div className="min-h-screen pt-20 flex bg-surface-900">
+      {/* Sidebar for chat history */}
+      {user && (
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-72 bg-surface-800 border-r border-white/[0.06] transform transition-transform duration-300 ease-in-out pt-20 md:relative md:pt-0 md:translate-x-0 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } flex flex-col h-screen md:h-[calc(100vh-80px)]`}
+      >
+        <div className="p-4 border-b border-white/[0.06]">
+          <button
+            onClick={startNewChat}
+            className="w-full flex items-center gap-2 px-4 py-3 rounded-xl bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 border border-brand-500/20 transition-all font-medium text-sm"
+          >
+            <Plus size={18} />
+            {lang === 'si' ? 'නව සංවාදයක්' : lang === 'ta' ? 'புதிய உரையாடல்' : 'New Chat'}
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {sessions.map((session) => {
+            const firstMessage = session.messages?.[0]?.content || 'New Chat';
+            const snippet = firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
+            return (
+              <div
+                key={session.id}
+                onClick={() => loadSession(session.id)}
+                className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${
+                  currentSessionId === session.id
+                    ? 'bg-white/[0.1] border border-white/[0.1]'
+                    : 'hover:bg-white/[0.05] border border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <MessageSquare size={16} className="text-white/40 flex-shrink-0" />
+                  <span className="text-sm text-white/80 truncate">{snippet}</span>
+                </div>
+                <button
+                  onClick={(e) => deleteSession(session.id, e)}
+                  title="Delete chat"
+                  className="hidden group-hover:block p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-rose-400 transition-all"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      )}
+
+      {/* Main chat area */}
+      <div className="flex-1 flex flex-col w-full h-[calc(100vh-80px)] overflow-hidden relative">
+        {/* Mobile sidebar overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-30 md:hidden mt-20"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+        
+        {/* Header bar */}
+        <div className="border-b border-white/[0.06] bg-surface-900/80 backdrop-blur-xl shrink-0">
         <div className="section-container flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
+            {user && (
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="md:hidden p-2 -ml-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg"
+              >
+                <Menu size={20} />
+              </button>
+            )}
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
               <Bot size={16} className="text-white" />
             </div>
@@ -419,6 +551,7 @@ export default function ChatPage() {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </div>
   );

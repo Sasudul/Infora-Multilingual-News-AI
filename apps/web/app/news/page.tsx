@@ -49,7 +49,7 @@ export default function NewsPage() {
 
   useEffect(() => {
     setIsLoading(true);
-    newsApi.getLatest(50)
+    newsApi.getLatest(150)
       .then((data) => {
         if (data && data.length > 0) {
           const mapped = data.map((item: any) => {
