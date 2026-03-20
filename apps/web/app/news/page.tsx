@@ -1,23 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { NewsModal, type NewsArticleType } from '@/components/news/NewsModal';
+import { useI18n } from '@/i18n';
+import { newsApi } from '@/lib/api';
+import { DEMO_NEWS, NEWS_CATEGORIES, NEWS_SOURCES } from '@/lib/constants';
 import { motion } from 'framer-motion';
 import {
-  Globe,
-  Landmark,
-  TrendingUp,
-  Cpu,
-  Trophy,
-  Globe2,
-  MapPin,
-  Clock,
-  ExternalLink,
-  Search,
   BadgeCheck,
+  Clock,
+  Cpu,
+  ExternalLink,
+  Globe,
+  Globe2,
+  Landmark,
+  MapPin,
   Newspaper,
+  Search,
+  TrendingUp,
+  Trophy,
 } from 'lucide-react';
-import { NEWS_CATEGORIES, DEMO_NEWS, NEWS_SOURCES } from '@/lib/constants';
-import { useI18n } from '@/i18n';
+import { useEffect, useState } from 'react';
+
+const formatNewsDate = (dateStr: string) => {
+  if (!dateStr) return 'Recent';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Recent';
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return 'Recent'; }
+};
+
+const getValidImage = (url: any, fallback: string) => {
+  if (!url || typeof url !== 'string' || url === 'null' || url.trim() === '' || !url.startsWith('http')) return fallback;
+  return url;
+};
 
 const iconMap: Record<string, any> = {
   Globe, Landmark, TrendingUp, Cpu, Trophy, Globe2, MapPin,
@@ -27,13 +43,52 @@ export default function NewsPage() {
   const { lang, t } = useI18n();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [news, setNews] = useState<any[]>([...DEMO_NEWS]); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState<NewsArticleType | null>(null);
 
-  const filteredNews = DEMO_NEWS.filter((n) => {
+  useEffect(() => {
+    setIsLoading(true);
+    newsApi.getLatest(50)
+      .then((data) => {
+        if (data && data.length > 0) {
+          const mapped = data.map((item: any) => {
+            const cat = item.category?.toLowerCase() || 'local';
+            let fallbackImage = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=600&fit=crop'; // Modern Newspapers
+            if (cat.includes('economy')) fallbackImage = 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&h=400&fit=crop';
+            if (cat.includes('technology')) fallbackImage = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop';
+            if (cat.includes('sports')) fallbackImage = 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=600&h=400&fit=crop';
+            if (cat.includes('politics')) fallbackImage = 'https://images.unsplash.com/photo-1523050854058-8df90110c476?w=600&h=400&fit=crop';
+
+            return {
+              id: item.id || Math.random().toString(),
+              title: lang === 'si' ? (item.titleSi || item.titleEn) : lang === 'ta' ? (item.titleTa || item.titleEn) : item.titleEn,
+              summary: lang === 'si' ? (item.summarySi || item.summaryEn) : lang === 'ta' ? (item.summaryTa || item.summaryEn) : item.summaryEn,
+              source: item.source || 'Infora News',
+              sourceUrl: item.sourceUrl || '#',
+              sourceVerified: item.verified ?? true,
+              category: item.category || 'local',
+              imageUrl: getValidImage(item.imageUrl, fallbackImage),
+              publishedAt: formatNewsDate(item.publishedAt),
+              district: item.district || 'Colombo',
+              url: item.url || '#',
+            };
+          });
+          setNews(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch news from backend", err);
+      })
+      .finally(() => setIsLoading(false));
+  }, [lang]);
+
+  const filteredNews = news.filter((n) => {
     const matchesCategory = activeCategory === 'all' || n.category === activeCategory;
     const matchesSearch =
       !searchQuery ||
-      n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.summary.toLowerCase().includes(searchQuery.toLowerCase());
+      n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      n.summary?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -138,14 +193,20 @@ export default function NewsPage() {
         </motion.div>
 
         {/* News grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="w-8 h-8 rounded-full border-2 border-brand-500/30 border-t-brand-500 animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredNews.map((article, idx) => (
             <motion.article
               key={article.id}
+              onClick={() => setSelectedArticle(article as NewsArticleType)}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.08 }}
-              className="card-interactive overflow-hidden group"
+              className="card-interactive overflow-hidden group cursor-pointer"
             >
               {/* Image */}
               <div className="relative h-48 overflow-hidden">
@@ -169,7 +230,7 @@ export default function NewsPage() {
                   {article.summary}
                 </p>
 
-                {/* Source attribution — prominent */}
+                {/* Source attribution  prominent */}
                 <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05]">
                   <Newspaper size={12} className="text-brand-400" />
                   <a
@@ -200,8 +261,9 @@ export default function NewsPage() {
             </motion.article>
           ))}
         </div>
+        )}
 
-        {filteredNews.length === 0 && (
+        {!isLoading && filteredNews.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -211,6 +273,11 @@ export default function NewsPage() {
           </motion.div>
         )}
       </div>
+      
+      {/* News details modal */}
+      {selectedArticle && (
+        <NewsModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
+      )}
     </div>
   );
 }
