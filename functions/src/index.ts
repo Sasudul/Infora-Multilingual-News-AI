@@ -1,12 +1,12 @@
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 
 admin.initializeApp();
 const db = admin.firestore();
 
 /**
- * Scheduled Cloud Function — runs every 15 minutes.
+ * Scheduled Cloud Function runs every 15 minutes.
  * Fetches news from Sri Lankan RSS feeds and stores in Firestore.
  */
 export const scrapeNews = functions.pubsub

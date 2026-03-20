@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Infora Backend — Spring Boot REST API entry point.
+ * Infora Backend Spring Boot REST API entry point.
  *
  * Provides REST endpoints for:
  *  - News retrieval & caching

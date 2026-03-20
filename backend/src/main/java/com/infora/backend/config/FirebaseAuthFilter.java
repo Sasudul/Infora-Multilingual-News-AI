@@ -17,7 +17,7 @@ import java.io.IOException;
  * Firebase Authentication filter that verifies ID tokens
  * from the Authorization header.
  *
- * Currently in permissive mode — logs warnings but allows requests through.
+ * Currently in permissive mode logs warnings but allows requests through.
  * To enforce auth: return 401 when token is missing/invalid.
  */
 @Component

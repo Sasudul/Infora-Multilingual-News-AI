@@ -2,6 +2,7 @@
 
 import { useI18n, type LangCode } from '@/i18n';
 import { CHAT_SUGGESTIONS, CHAT_SUGGESTIONS_SI, CHAT_SUGGESTIONS_TA, GOV_SERVICES, LANGUAGES } from '@/lib/constants';
+import { chatApi } from '@/lib/api';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -138,17 +139,31 @@ export default function ChatPage() {
     setInput('');
     setIsTyping(true);
 
-    await new Promise((r) => setTimeout(r, 1200));
-    const demo = getDemo(text, lang);
-    const aiMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: demo.text,
-      timestamp: new Date(),
-      cards: demo.cards,
-    };
-    setIsTyping(false);
-    setMessages((prev) => [...prev, aiMsg]);
+    try {
+      const response = await chatApi.sendMessage(text, undefined, lang);
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response.reply?.content || "Sorry, I couldn't generate a response.",
+        timestamp: new Date(),
+        cards: response.cards || [],
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (e) {
+      console.error("Chat API error:", e);
+      // Fallback to local demo if backend fails
+      const demo = getDemo(text, lang);
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: demo.text + "\n*(Demo fallback)*",
+        timestamp: new Date(),
+        cards: demo.cards,
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

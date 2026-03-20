@@ -40,7 +40,7 @@ export const en = {
     lang1: 'Sinhala',
     lang2: 'Tamil',
     lang3: 'English',
-    subtitleEnd: 'Get instant news, government service guidance, and smart answers — all in one place.',
+    subtitleEnd: 'Get instant news, government service guidance, and smart answers  all in one place.',
     or: 'or',
   },
 
@@ -49,7 +49,7 @@ export const en = {
     sectionLabel: 'Core Features',
     title: 'Everything You Need,',
     titleHighlight: 'One Platform',
-    subtitle: 'A complete AI-powered ecosystem for Sri Lankan information access — built for everyone.',
+    subtitle: 'A complete AI-powered ecosystem for Sri Lankan information access built for everyone.',
     conversationalAI: 'Conversational AI',
     conversationalAIDesc: 'Natural multi-turn chat in Sinhala, Tamil, and English with context understanding.',
     smartNews: 'Smart News Retrieval',
@@ -69,7 +69,7 @@ export const en = {
     sectionLabel: 'How It Works',
     title: 'Simple as',
     titleHighlight: 'Conversation',
-    subtitle: 'From question to answer in seconds — no complex navigation required.',
+    subtitle: 'From question to answer in seconds no complex navigation required.',
     step1Title: 'Ask a Question',
     step1Desc: 'Type your question in Sinhala, Tamil, or English. Ask anything about news, government services, or general queries.',
     step2Title: 'AI Understands',
@@ -77,7 +77,7 @@ export const en = {
     step3Title: 'Smart Processing',
     step3Desc: 'Retrieves news from verified sources, looks up government service data, or generates an intelligent response.',
     step4Title: 'Get Your Answer',
-    step4Desc: 'Receive structured, accurate responses as interactive cards — in your language, ready to act on.',
+    step4Desc: 'Receive structured, accurate responses as interactive cards in your language, ready to act on.',
   },
 
   // ─── CTA ───
@@ -92,7 +92,7 @@ export const en = {
   chat: {
     title: 'Infora AI',
     welcomeTitle: 'Welcome to',
-    welcomeSubtitle: 'Ask me anything about Sri Lankan news, government services, or general information — in Sinhala, Tamil, or English.',
+    welcomeSubtitle: 'Ask me anything about Sri Lankan news, government services, or general information in Sinhala, Tamil, or English.',
     placeholder: 'Ask about news, services, or anything...',
     suggestion1: 'Latest news in Sri Lanka',
     suggestion2: 'How to apply for a passport?',
@@ -152,7 +152,7 @@ export const en = {
     apiReference: 'API Reference',
     github: 'GitHub',
     rights: 'All rights reserved.',
-    description: 'AI-powered multilingual assistant for Sri Lankan citizens. News, government services, and more — in your language.',
+    description: 'AI-powered multilingual assistant for Sri Lankan citizens. News, government services, and more in your language.',
   },
 } as const;
 

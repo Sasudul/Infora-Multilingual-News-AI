@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * Health-check endpoint — useful for monitoring and deployment verification.
+ * Health-check endpoint useful for monitoring and deployment verification.
  */
 @RestController
 @RequestMapping("/api")

@@ -146,20 +146,41 @@ public class ChatService {
             cards = getServiceCards("driving-license");
 
         } else {
-            replyText = getLocalizedText(language,
-                    "I can help you with Sri Lankan news, government services, and general information. Try asking about passports, NIC registration, latest news, or any government service!",
-                    "මට ශ්‍රී ලංකාවේ පුවත්, රජයේ සේවා සහ සාමාන්‍ය තොරතුරු සම්බන්ධයෙන් ඔබට උදව් කළ හැකිය.",
-                    "இலங்கை செய்திகள், அரசாங்க சேவைகள் மற்றும் பொதுவான தகவல்களில் நான் உங்களுக்கு உதவ முடியும்.");
-            ChatResponse.ResponseCard card1 = new ChatResponse.ResponseCard();
-            card1.setTitle("Browse News");
-            card1.setDescription("Get the latest headlines from verified Sri Lankan sources.");
-            card1.setType("info");
-            cards.add(card1);
-            ChatResponse.ResponseCard card2 = new ChatResponse.ResponseCard();
-            card2.setTitle("Government Services");
-            card2.setDescription("Step-by-step guides for passports, NIC, driving license & more.");
-            card2.setType("info");
-            cards.add(card2);
+            List<NewsArticle> foundNews = newsService.searchNews(query, 3);
+            if (!foundNews.isEmpty()) {
+                replyText = getLocalizedText(language,
+                        "I found some recent news related to your query:",
+                        "ඔබේ විමසීමට අදාළ මෑත කාලීන පුවත් කිහිපයක් මා සොයා ගත්තෙමි:",
+                        "உங்கள் வினவல் தொடர்பான சமீபத்திய செய்திகளை நான் கண்டேன்:");
+                
+                cards = foundNews.stream()
+                        .map(a -> {
+                            ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
+                            card.setTitle(a.getTitleEn() != null ? a.getTitleEn() : "News Article");
+                            card.setDescription(a.getSummaryEn() != null ? a.getSummaryEn() : "");
+                            card.setType("news");
+                            card.setSource(a.getSource());
+                            card.setSourceUrl(a.getSourceUrl());
+                            card.setVerified(a.isVerified());
+                            return card;
+                        })
+                        .collect(Collectors.toList());
+            } else {
+                replyText = getLocalizedText(language,
+                        "I can help you with Sri Lankan news, government services, and general information. Try asking about passports, NIC registration, latest news, or any government service!",
+                        "මට ශ්‍රී ලංකාවේ පුවත්, රජයේ සේවා සහ සාමාන්‍ය තොරතුරු සම්බන්ධයෙන් ඔබට උදව් කළ හැකිය.",
+                        "இலங்கை செய்திகள், அரசாங்க சேவைகள் மற்றும் பொதுவான தகவல்களில் நான் உங்களுக்கு உதவ முடியும்.");
+                ChatResponse.ResponseCard card1 = new ChatResponse.ResponseCard();
+                card1.setTitle("Browse News");
+                card1.setDescription("Get the latest headlines from verified Sri Lankan sources.");
+                card1.setType("info");
+                cards.add(card1);
+                ChatResponse.ResponseCard card2 = new ChatResponse.ResponseCard();
+                card2.setTitle("Government Services");
+                card2.setDescription("Step-by-step guides for passports, NIC, driving license & more.");
+                card2.setType("info");
+                cards.add(card2);
+            }
         }
 
         Message reply = new Message();
