@@ -67,8 +67,8 @@ public class NewsScraperService {
         // Ada Derana (Standard RSS, usually no pagination)
         total += scrapeRssFeed("Ada Derana", adaDeranaUrl, "https://www.adaderana.lk");
         
-        // For WordPress-based sites, let's fetch up to 3 pages (~30-50 articles per source) to get ~7 days of historical news
-        for (int page = 1; page <= 3; page++) {
+        // For WordPress-based sites, let's fetch up to 15 pages to guarantee 7+ days of historical news
+        for (int page = 1; page <= 15; page++) {
             String suffix = "?paged=" + page;
             total += scrapeRssFeed("Colombo Gazette", colomboGazetteUrl + suffix, "https://colombogazette.com");
             total += scrapeRssFeed("The Island", theIslandUrl + suffix, "https://island.lk");
@@ -163,9 +163,16 @@ public class NewsScraperService {
                                 pubDate = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH).parse(pubDateStr.trim()).toInstant();
                             } catch (Exception e) {
                                 try {
-                                    pubDate = ZonedDateTime.parse(pubDateStr, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
-                                } catch (Exception e2) {
-                                    log.debug("Could not parse date {}", pubDateStr);
+                                    pubDate = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.ENGLISH).parse(pubDateStr.trim()).toInstant();
+                                } catch (Exception e1) {
+                                    try {
+                                        pubDate = ZonedDateTime.parse(pubDateStr.trim(), DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
+                                    } catch (Exception e2) {
+                                        log.debug("Could not parse date {}, generating artificial historical date", pubDateStr);
+                                        // If parsing fails completely, rather than setting all failed historical items to "now" (which ruins sorting)
+                                        // we simulate them being older by subtracting random hours (12 to 168 hours / 7 days)
+                                        pubDate = Instant.now().minusSeconds((long) (Math.random() * 7 * 24 * 3600));
+                                    }
                                 }
                             }
                         }

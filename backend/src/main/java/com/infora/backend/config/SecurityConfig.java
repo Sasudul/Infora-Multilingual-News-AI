@@ -28,12 +28,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, com.infora.backend.security.FirebaseTokenFilter firebaseTokenFilter) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .addFilterBefore(firebaseTokenFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers(
@@ -44,8 +45,8 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/actuator/**"
                 ).permitAll()
-                // All other endpoints require authentication (future)
-                .anyRequest().permitAll() // TODO: change to .authenticated()
+                // Require Auth for User Specific endpoints like saving bookmarks (future)
+                .anyRequest().permitAll() // TODO: change to .authenticated() if specific paths are added
             );
 
         return http.build();

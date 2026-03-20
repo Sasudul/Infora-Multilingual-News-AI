@@ -10,6 +10,11 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.io.File;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 @Repository
 public class NewsRepository {
@@ -19,9 +24,34 @@ public class NewsRepository {
     private final Firestore firestore;
     private static final String COLLECTION = "newsCache";
     private final Map<String, NewsArticle> memoryCache = new ConcurrentHashMap<>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String CACHE_FILE_PATH = "news_cache_fallback.json";
 
     public NewsRepository(Firestore firestore) {
         this.firestore = firestore;
+        objectMapper.findAndRegisterModules();
+    }
+
+    @PostConstruct
+    public void loadLocalCache() {
+        try {
+            File cacheFile = new File(CACHE_FILE_PATH);
+            if (cacheFile.exists()) {
+                Map<String, NewsArticle> savedCache = objectMapper.readValue(cacheFile, new TypeReference<Map<String, NewsArticle>>(){});
+                memoryCache.putAll(savedCache);
+                log.info("Loaded {} articles from local JSON cache file.", memoryCache.size());
+            }
+        } catch (Exception e) {
+            log.warn("Failed to load local JSON cache: {}", e.getMessage());
+        }
+    }
+
+    private void saveLocalCache() {
+        try {
+            objectMapper.writeValue(new File(CACHE_FILE_PATH), memoryCache);
+        } catch (Exception e) {
+            log.warn("Failed to save to local JSON cache: {}", e.getMessage());
+        }
     }
 
     public NewsArticle save(NewsArticle article) {
@@ -49,6 +79,11 @@ public class NewsRepository {
             log.info("News article saved to Firestore: {}", docId);
         } catch (Exception e) {
             log.warn("Failed to save to Firestore (offline/blocked?), kept securely in memory cache: {}", e.getMessage());
+        }
+        
+        // Persist local cache file periodically/on save
+        if (memoryCache.size() % 5 == 0) {
+            saveLocalCache();
         }
         return article;
     }

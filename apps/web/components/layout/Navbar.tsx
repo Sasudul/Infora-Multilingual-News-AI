@@ -6,11 +6,14 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n, type LangCode } from '@/i18n';
+import { useAuth } from '@/lib/auth';
+import { LogOut, User } from 'lucide-react';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { lang, setLang, t } = useI18n();
+  const { user, loading, signOut } = useAuth();
 
   const links = [
     { label: t.nav.home, href: '/' },
@@ -72,18 +75,42 @@ export function Navbar() {
             </button>
           </div>
 
-          <Link
-            href="/login"
-            className="px-6 py-2 rounded-full text-sm font-medium text-brand-200 bg-brand-400/10 border border-brand-400/20 hover:bg-brand-400/20 transition-all"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/chat"
-            className="px-6 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/5 transition-all text-white/90"
-          >
-            Sign Up
-          </Link>
+          {!loading && user ? (
+            <div className="flex items-center gap-4 ml-2">
+              <div className="flex items-center gap-2 pr-4 border-r border-white/10">
+                <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center">
+                  <User size={14} className="text-brand-300" />
+                </div>
+                <span className="text-sm font-medium text-white/90">
+                  {user.displayName || user.email?.split('@')[0]}
+                </span>
+              </div>
+              <button
+                onClick={signOut}
+                className="text-white/50 hover:text-rose-400 transition-colors"
+                title="Log out"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : !loading && !user ? (
+            <>
+              <Link
+                href="/login"
+                className="px-6 py-2 rounded-full text-sm font-medium text-brand-200 bg-brand-400/10 border border-brand-400/20 hover:bg-brand-400/20 transition-all"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/signup"
+                className="px-6 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/5 transition-all text-white/90"
+              >
+                Sign Up
+              </Link>
+            </>
+          ) : (
+            <div className="w-24 h-8 animate-pulse bg-white/5 rounded-full" />
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -126,18 +153,42 @@ export function Navbar() {
               </div>
 
               <div className="flex flex-col gap-2 mt-2 pt-4 border-t border-white/5">
-                <Link
-                  href="/login"
-                  className="w-full text-center py-2.5 rounded-lg bg-brand-400/10 text-brand-200 border border-brand-400/20"
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/chat"
-                  className="w-full text-center py-2.5 rounded-lg border border-white/20 text-white/90"
-                >
-                  Sign Up
-                </Link>
+                {!loading && user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-2 py-2 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-brand-500/20 flex items-center justify-center">
+                        <User size={18} className="text-brand-300" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-white">{user.displayName || 'User'}</span>
+                        <span className="text-xs text-white/40">{user.email}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { signOut(); setIsOpen(false); }}
+                      className="w-full text-center py-2.5 rounded-lg flex items-center justify-center gap-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all"
+                    >
+                      <LogOut size={16} /> Log Out
+                    </button>
+                  </>
+                ) : !loading && !user ? (
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg bg-brand-400/10 text-brand-200 border border-brand-400/20"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      onClick={() => setIsOpen(false)}
+                      className="w-full text-center py-2.5 rounded-lg border border-white/20 text-white/90"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                ) : null}
               </div>
             </div>
           </motion.div>

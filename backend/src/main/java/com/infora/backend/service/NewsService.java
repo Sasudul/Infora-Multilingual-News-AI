@@ -21,15 +21,15 @@ public class NewsService {
     }
 
     public List<NewsArticle> getLatestNews(int limit) {
-        return newsRepository.findAll(Math.min(limit, 50));
+        return newsRepository.findAll(Math.min(limit, 500));
     }
 
     public List<NewsArticle> getNewsByCategory(String category, int limit) {
-        return newsRepository.findByCategory(category, Math.min(limit, 50));
+        return newsRepository.findByCategory(category, Math.min(limit, 500));
     }
 
     public List<NewsArticle> getNewsByDistrict(String district, int limit) {
-        return newsRepository.findByDistrict(district, Math.min(limit, 50));
+        return newsRepository.findByDistrict(district, Math.min(limit, 500));
     }
 
     public Optional<NewsArticle> getArticle(String id) {
@@ -37,7 +37,7 @@ public class NewsService {
     }
 
     public List<NewsArticle> searchNews(String query, int limit) {
-        return newsRepository.search(query, Math.min(limit, 50));
+        return newsRepository.search(query, Math.min(limit, 500));
     }
 
     public NewsArticle saveArticle(NewsArticle article) {

@@ -1,12 +1,28 @@
+import { auth } from './firebase';
+
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080/api/v1';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (auth.currentUser) {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['X-User-Id'] = auth.currentUser.uid;
+    } catch (err) {
+      console.error('Failed to get auth token', err);
+    }
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
     headers: {
-      'Content-Type': 'application/json',
+      ...headers,
       ...options?.headers,
     },
-    ...options,
   });
 
   if (!res.ok) {
