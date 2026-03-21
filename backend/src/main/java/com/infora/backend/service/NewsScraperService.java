@@ -30,9 +30,11 @@ public class NewsScraperService {
     private static final Logger log = LoggerFactory.getLogger(NewsScraperService.class);
 
     private final NewsRepository newsRepository;
+    private final TranslationService translationService;
 
-    public NewsScraperService(NewsRepository newsRepository) {
+    public NewsScraperService(NewsRepository newsRepository, TranslationService translationService) {
         this.newsRepository = newsRepository;
+        this.translationService = translationService;
     }
 
     @Value("${news.sources.ada-derana:https://www.adaderana.lk/rss.php}")
@@ -209,6 +211,15 @@ public class NewsScraperService {
                         article.setDistrict("Colombo");
                         article.setPublishedAt(pubDate);
                         article.setVerified(true);
+
+                        // Perform on-the-fly NLP translations to Sinhala and Tamil
+                        log.debug("Translating article: {}", title);
+                        article.setTitleSi(translationService.translate(article.getTitleEn(), "si"));
+                        article.setSummarySi(translationService.translate(article.getSummaryEn(), "si"));
+                        article.setTitleTa(translationService.translate(article.getTitleEn(), "ta"));
+                        article.setSummaryTa(translationService.translate(article.getSummaryEn(), "ta"));
+                        
+                        try { Thread.sleep(200); } catch (Exception ignored) {} // Brief buffer to respect free API rate limits
 
                         newsRepository.save(article);
                         count++;

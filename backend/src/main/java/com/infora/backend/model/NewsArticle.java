@@ -6,8 +6,10 @@ public class NewsArticle {
     private String id;
     private String titleEn;
     private String titleSi;
+    private String titleTa;
     private String summaryEn;
     private String summarySi;
+    private String summaryTa;
     private String source;
     private String sourceUrl;
     private String url;
@@ -19,12 +21,14 @@ public class NewsArticle {
 
     public NewsArticle() {}
 
-    public NewsArticle(String id, String titleEn, String titleSi, String summaryEn, String summarySi, String source, String sourceUrl, String url, String imageUrl, Instant publishedAt, String district, String category, boolean verified) {
+    public NewsArticle(String id, String titleEn, String titleSi, String titleTa, String summaryEn, String summarySi, String summaryTa, String source, String sourceUrl, String url, String imageUrl, Instant publishedAt, String district, String category, boolean verified) {
         this.id = id;
         this.titleEn = titleEn;
         this.titleSi = titleSi;
+        this.titleTa = titleTa;
         this.summaryEn = summaryEn;
         this.summarySi = summarySi;
+        this.summaryTa = summaryTa;
         this.source = source;
         this.sourceUrl = sourceUrl;
         this.url = url;
@@ -41,10 +45,14 @@ public class NewsArticle {
     public void setTitleEn(String titleEn) { this.titleEn = titleEn; }
     public String getTitleSi() { return titleSi; }
     public void setTitleSi(String titleSi) { this.titleSi = titleSi; }
+    public String getTitleTa() { return titleTa; }
+    public void setTitleTa(String titleTa) { this.titleTa = titleTa; }
     public String getSummaryEn() { return summaryEn; }
     public void setSummaryEn(String summaryEn) { this.summaryEn = summaryEn; }
     public String getSummarySi() { return summarySi; }
     public void setSummarySi(String summarySi) { this.summarySi = summarySi; }
+    public String getSummaryTa() { return summaryTa; }
+    public void setSummaryTa(String summaryTa) { this.summaryTa = summaryTa; }
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
     public String getSourceUrl() { return sourceUrl; }

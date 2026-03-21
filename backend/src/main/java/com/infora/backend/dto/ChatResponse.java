@@ -26,11 +26,18 @@ public class ChatResponse {
 
     public static class ResponseCard {
         private String title;
+        private String titleSi;
+        private String titleTa;
         private String description;
+        private String descriptionSi;
+        private String descriptionTa;
         private String type; // "news", "service", "info"
         private String source;
         private String sourceUrl;
         private boolean verified;
+        private String imageUrl;
+        private String publishedAt;
+        private String district;
 
         public ResponseCard() {}
 
@@ -45,8 +52,16 @@ public class ChatResponse {
 
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
+        public String getTitleSi() { return titleSi; }
+        public void setTitleSi(String titleSi) { this.titleSi = titleSi; }
+        public String getTitleTa() { return titleTa; }
+        public void setTitleTa(String titleTa) { this.titleTa = titleTa; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
+        public String getDescriptionSi() { return descriptionSi; }
+        public void setDescriptionSi(String descriptionSi) { this.descriptionSi = descriptionSi; }
+        public String getDescriptionTa() { return descriptionTa; }
+        public void setDescriptionTa(String descriptionTa) { this.descriptionTa = descriptionTa; }
         public String getType() { return type; }
         public void setType(String type) { this.type = type; }
         public String getSource() { return source; }
@@ -55,5 +70,11 @@ public class ChatResponse {
         public void setSourceUrl(String sourceUrl) { this.sourceUrl = sourceUrl; }
         public boolean isVerified() { return verified; }
         public void setVerified(boolean verified) { this.verified = verified; }
+        public String getImageUrl() { return imageUrl; }
+        public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+        public String getPublishedAt() { return publishedAt; }
+        public void setPublishedAt(String publishedAt) { this.publishedAt = publishedAt; }
+        public String getDistrict() { return district; }
+        public void setDistrict(String district) { this.district = district; }
     }
 }

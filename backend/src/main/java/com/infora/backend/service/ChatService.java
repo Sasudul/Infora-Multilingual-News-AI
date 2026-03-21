@@ -31,11 +31,13 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final NewsService newsService;
     private final GovServiceService govServiceService;
+    private final LlmRAGService llmRAGService;
 
-    public ChatService(ChatRepository chatRepository, NewsService newsService, GovServiceService govServiceService) {
+    public ChatService(ChatRepository chatRepository, NewsService newsService, GovServiceService govServiceService, LlmRAGService llmRAGService) {
         this.chatRepository = chatRepository;
         this.newsService = newsService;
         this.govServiceService = govServiceService;
+        this.llmRAGService = llmRAGService;
     }
 
     public ChatResponse processMessage(String userId, ChatRequest request) {
@@ -67,6 +69,7 @@ public class ChatService {
         assistantMsg.setContent(response.getReply().getContent());
         assistantMsg.setType(response.getCards() != null && !response.getCards().isEmpty() ? "card" : "text");
         assistantMsg.setTimestamp(Instant.now());
+        assistantMsg.setCards(response.getCards());
         chatRepository.addMessage(session.getId(), assistantMsg);
 
         return response;
@@ -92,96 +95,69 @@ public class ChatService {
     private ChatResponse detectIntentAndRespond(String message, String language) {
         String query = message.toLowerCase();
         List<ChatResponse.ResponseCard> cards = new ArrayList<>();
-        String replyText;
+        StringBuilder contextBuilder = new StringBuilder();
 
         if (containsNewsIntent(query)) {
-            replyText = getLocalizedText(language,
-                    "Here are the latest news articles from verified Sri Lankan sources:",
-                    "සත්‍යාපිත ශ්‍රී ලාංකික මූලාශ්‍ර වලින් නවතම පුවත් ලිපි මෙන්න:",
-                    "சரிபார்க்கப்பட்ட இலங்கை ஆதாரங்களிலிருந்து சமீபத்திய செய்திக் கட்டுரைகள்:");
-
             List<NewsArticle> articles = newsService.getLatestNews(3);
             if (!articles.isEmpty()) {
-                cards = articles.stream()
-                        .map(a -> {
-                            ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
-                            card.setTitle(a.getTitleEn() != null ? a.getTitleEn() : "News Article");
-                            card.setDescription(a.getSummaryEn() != null ? a.getSummaryEn() : "");
-                            card.setType("news");
-                            card.setSource(a.getSource());
-                            card.setSourceUrl(a.getSourceUrl());
-                            card.setVerified(a.isVerified());
-                            return card;
-                        })
-                        .collect(Collectors.toList());
-            } else {
-                ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
-                card.setTitle("Latest Sri Lankan News");
-                card.setDescription("Check verified sources: Ada Derana, Daily Mirror, NewsFirst");
-                card.setType("news");
-                card.setSource("Multiple Sources");
-                card.setVerified(true);
-                cards.add(card);
+                contextBuilder.append("Latest News context:\n");
+                for (NewsArticle a : articles) {
+                    contextBuilder.append("- ").append(a.getTitleEn()).append(": ").append(a.getSummaryEn()).append("\n");
+                    ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
+                    card.setTitle(a.getTitleEn() != null ? a.getTitleEn() : "News Article");
+                    card.setTitleSi(a.getTitleSi());
+                    card.setTitleTa(a.getTitleTa());
+                    card.setDescription(a.getSummaryEn() != null ? a.getSummaryEn() : "");
+                    card.setDescriptionSi(a.getSummarySi());
+                    card.setDescriptionTa(a.getSummaryTa());
+                    card.setType("news");
+                    card.setSource(a.getSource());
+                    card.setSourceUrl(a.getSourceUrl());
+                    card.setVerified(a.isVerified());
+                    card.setImageUrl(a.getImageUrl());
+                    card.setDistrict(a.getDistrict());
+                    if (a.getPublishedAt() != null) card.setPublishedAt(a.getPublishedAt().toString());
+                    cards.add(card);
+                }
             }
-
         } else if (containsPassportIntent(query)) {
-            replyText = getLocalizedText(language,
-                    "Here's a guide to the Passport Application process:",
-                    "ගමන් බලපත්‍ර අයදුම් ක්‍රියාවලිය පිළිබඳ මාර්ගෝපදේශනය:",
-                    "கடவுச்சீட்டு விண்ணப்ப செயல்முறை வழிகாட்டி:");
+            contextBuilder.append("Service context: Passport Application. Steps: Gather NIC, Form K35A, Birth Certificate. Pay LKR 3500.\n");
             cards = getServiceCards("passport");
-
         } else if (containsNicIntent(query)) {
-            replyText = getLocalizedText(language,
-                    "Here's how to register for a National Identity Card:",
-                    "ජාතික හැඳුනුම්පත සඳහා ලියාපදිංචි වන ආකාරය:",
-                    "தேசிய அடையாள அட்டைக்கு பதிவு செய்வது எப்படி:");
+            contextBuilder.append("Service context: NIC Registration at Department of Registration of Persons. Requires GN cert and Birth cert.\n");
             cards = getServiceCards("nic");
-
         } else if (containsDrivingIntent(query)) {
-            replyText = getLocalizedText(language,
-                    "Here's the driving license application process:",
-                    "රියදුරු බලපත්‍ර අයදුම් ක්‍රියාවලිය:",
-                    "ஓட்டுநர் உரிமம் விண்ணப்ப செயல்முறை:");
+            contextBuilder.append("Service context: Driving License. Requires medical certificate and passing written exam. Fee LKR 1500.\n");
             cards = getServiceCards("driving-license");
-
         } else {
             List<NewsArticle> foundNews = newsService.searchNews(query, 3);
             if (!foundNews.isEmpty()) {
-                replyText = getLocalizedText(language,
-                        "I found some recent news related to your query:",
-                        "ඔබේ විමසීමට අදාළ මෑත කාලීන පුවත් කිහිපයක් මා සොයා ගත්තෙමි:",
-                        "உங்கள் வினவல் தொடர்பான சமீபத்திய செய்திகளை நான் கண்டேன்:");
-                
-                cards = foundNews.stream()
-                        .map(a -> {
-                            ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
-                            card.setTitle(a.getTitleEn() != null ? a.getTitleEn() : "News Article");
-                            card.setDescription(a.getSummaryEn() != null ? a.getSummaryEn() : "");
-                            card.setType("news");
-                            card.setSource(a.getSource());
-                            card.setSourceUrl(a.getSourceUrl());
-                            card.setVerified(a.isVerified());
-                            return card;
-                        })
-                        .collect(Collectors.toList());
+                contextBuilder.append("Relevant News Found in database:\n");
+                for (NewsArticle a : foundNews) {
+                    contextBuilder.append("- ").append(a.getTitleEn()).append(": ").append(a.getSummaryEn()).append("\n");
+                    ChatResponse.ResponseCard card = new ChatResponse.ResponseCard();
+                    card.setTitle(a.getTitleEn() != null ? a.getTitleEn() : "News Article");
+                    card.setTitleSi(a.getTitleSi());
+                    card.setTitleTa(a.getTitleTa());
+                    card.setDescription(a.getSummaryEn() != null ? a.getSummaryEn() : "");
+                    card.setDescriptionSi(a.getSummarySi());
+                    card.setDescriptionTa(a.getSummaryTa());
+                    card.setType("news");
+                    card.setSource(a.getSource());
+                    card.setSourceUrl(a.getSourceUrl());
+                    card.setVerified(a.isVerified());
+                    card.setImageUrl(a.getImageUrl());
+                    card.setDistrict(a.getDistrict());
+                    if (a.getPublishedAt() != null) card.setPublishedAt(a.getPublishedAt().toString());
+                    cards.add(card);
+                }
             } else {
-                replyText = getLocalizedText(language,
-                        "I can help you with Sri Lankan news, government services, and general information. Try asking about passports, NIC registration, latest news, or any government service!",
-                        "මට ශ්‍රී ලංකාවේ පුවත්, රජයේ සේවා සහ සාමාන්‍ය තොරතුරු සම්බන්ධයෙන් ඔබට උදව් කළ හැකිය.",
-                        "இலங்கை செய்திகள், அரசாங்க சேவைகள் மற்றும் பொதுவான தகவல்களில் நான் உங்களுக்கு உதவ முடியும்.");
-                ChatResponse.ResponseCard card1 = new ChatResponse.ResponseCard();
-                card1.setTitle("Browse News");
-                card1.setDescription("Get the latest headlines from verified Sri Lankan sources.");
-                card1.setType("info");
-                cards.add(card1);
-                ChatResponse.ResponseCard card2 = new ChatResponse.ResponseCard();
-                card2.setTitle("Government Services");
-                card2.setDescription("Step-by-step guides for passports, NIC, driving license & more.");
-                card2.setType("info");
-                cards.add(card2);
+                contextBuilder.append("No strictly relevant news or services found. Provide a friendly conversational response pointing out the capabilities: News and Government Services.");
             }
         }
+
+        // Engage the RAG LLM Engine for a dynamic, intelligent, ChatGPT-like conversational reply!
+        String replyText = llmRAGService.generateResponse(message, contextBuilder.toString(), language);
 
         Message reply = new Message();
         reply.setRole("assistant");

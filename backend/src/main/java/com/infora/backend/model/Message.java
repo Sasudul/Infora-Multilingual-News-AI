@@ -1,7 +1,9 @@
 package com.infora.backend.model;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import com.infora.backend.dto.ChatResponse;
 
 public class Message {
     private String role;       // "user", "assistant", "system"
@@ -9,6 +11,7 @@ public class Message {
     private String type;       // "text", "card", "step", "link"
     private Instant timestamp;
     private Map<String, Object> metadata;
+    private List<ChatResponse.ResponseCard> cards;
 
     public Message() {}
 
@@ -30,4 +33,6 @@ public class Message {
     public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
     public Map<String, Object> getMetadata() { return metadata; }
     public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
+    public List<ChatResponse.ResponseCard> getCards() { return cards; }
+    public void setCards(List<ChatResponse.ResponseCard> cards) { this.cards = cards; }
 }

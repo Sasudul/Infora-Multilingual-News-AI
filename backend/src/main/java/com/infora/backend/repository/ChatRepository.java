@@ -60,7 +60,6 @@ public class ChatRepository {
         try {
             QuerySnapshot snapshot = firestore.collection(COLLECTION)
                     .whereEqualTo("userId", userId)
-                    .orderBy("updatedAt", Query.Direction.DESCENDING)
                     .limit(50)
                     .get().get();
             return snapshot.getDocuments().stream()

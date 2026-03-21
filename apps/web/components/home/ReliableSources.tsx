@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useI18n } from '@/i18n';
+import { motion } from 'framer-motion';
 
 const textMap: any = {
   en: { title: 'Our Reliable Sources', subtitle: 'InFora connects you to the most verified sources of information. Stay updated with unbiased news from all major Sri Lankan publishers.', viewSources: 'View Sources', viewDetails: 'View Details' },
@@ -10,10 +10,10 @@ const textMap: any = {
 };
 
 const sources = [
-  { id: 1, name: 'Ada Derana', img: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&h=150&fit=crop', url: 'https://www.adaderana.lk' },
-  { id: 2, name: 'Colombo Gazette', img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=150&h=150&fit=crop', url: 'https://colombogazette.com' },
-  { id: 3, name: 'The Island', img: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=150&h=150&fit=crop', url: 'https://island.lk' },
-  { id: 4, name: 'NewsWire', img: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=150&h=150&fit=crop', url: 'https://www.newswire.lk' },
+  { id: 1, name: 'Ada Derana', img: 'https://tse2.mm.bing.net/th/id/OIF.914WzCRqgwY0SbjVbvB8Sw?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3?w=150&h=150&fit=crop', url: 'https://www.adaderana.lk' },
+  { id: 2, name: 'Colombo Gazette', img: 'https://tse4.mm.bing.net/th/id/OIP.EIwRDsBIe-oRnVVkJ7qfZwHaEK?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3w=150&h=150&fit=crop', url: 'https://colombogazette.com' },
+  { id: 3, name: 'The Island', img: 'https://tse4.mm.bing.net/th/id/OIP.3osVVFwzlq7y2j-PcfaWOAAAAA?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3?w=150&h=150&fit=crop', url: 'https://island.lk' },
+  { id: 4, name: 'NewsWire', img: 'https://www.newswire.lk/wp-content/uploads/2021/02/new-logo-cropped-1.png?w=150&h=150&fit=crop', url: 'https://www.newswire.lk' },
 ];
 
 export function ReliableSources() {
