@@ -4,6 +4,7 @@ import { useI18n, type LangCode } from '@/i18n';
 import { CHAT_SUGGESTIONS, CHAT_SUGGESTIONS_SI, CHAT_SUGGESTIONS_TA, GOV_SERVICES, LANGUAGES } from '@/lib/constants';
 import { chatApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { NewsArticleType, NewsModal } from '@/components/news/NewsModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Menu,
@@ -11,6 +12,8 @@ import {
   MessageSquare,
   Trash2,
   X,
+  Volume2,
+  VolumeX,
   ArrowRight,
   BadgeCheck,
   BookOpen,
@@ -43,11 +46,18 @@ interface Message {
 
 interface ResponseCard {
   title: string;
+  titleSi?: string;
+  titleTa?: string;
   description: string;
+  descriptionSi?: string;
+  descriptionTa?: string;
   type: 'news' | 'service' | 'info';
   source?: string;
   sourceUrl?: string;
   verified?: boolean;
+  imageUrl?: string;
+  publishedAt?: string;
+  district?: string;
 }
 
 function getDemo(query: string, lang: LangCode): { text: string; cards: ResponseCard[] } {
@@ -129,6 +139,15 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<NewsArticleType | null>(null);
+  
+  const getCardTitle = (card: ResponseCard) => {
+    return lang === 'si' ? (card.titleSi || card.title) : lang === 'ta' ? (card.titleTa || card.title) : card.title;
+  };
+  const getCardDesc = (card: ResponseCard) => {
+    return lang === 'si' ? (card.descriptionSi || card.description) : lang === 'ta' ? (card.descriptionTa || card.description) : card.description;
+  };
   const chatEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -189,7 +208,7 @@ export default function ChatPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (text: string, fromVoice = false) => {
     if (!text.trim()) return;
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -215,6 +234,9 @@ export default function ChatPage() {
         cards: response.cards || [],
       };
       setMessages((prev) => [...prev, aiMsg]);
+      if (fromVoice) {
+        speakText(aiMsg.content, aiMsg.id);
+      }
     } catch (e) {
       console.error("Chat API error:", e);
       // Fallback to local demo if backend fails
@@ -227,6 +249,9 @@ export default function ChatPage() {
         cards: demo.cards,
       };
       setMessages((prev) => [...prev, aiMsg]);
+      if (fromVoice) {
+        speakText(aiMsg.content, aiMsg.id);
+      }
     } finally {
       setIsTyping(false);
     }
@@ -237,8 +262,29 @@ export default function ChatPage() {
     sendMessage(input);
   };
 
-  // ─── Voice Input (Web Speech API) ───
+  // ─── Voice Input & Output (Web Speech API) ───
   const langMap: Record<LangCode, string> = { en: 'en-US', si: 'si-LK', ta: 'ta-LK' };
+
+  const speakText = (text: string, msgId: string) => {
+    if (!('speechSynthesis' in window)) return;
+    
+    if (speakingId === msgId) {
+      window.speechSynthesis.cancel();
+      setSpeakingId(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setSpeakingId(msgId);
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = langMap[lang] || 'en-US';
+    
+    utterance.onend = () => setSpeakingId(null);
+    utterance.onerror = () => setSpeakingId(null);
+    
+    window.speechSynthesis.speak(utterance);
+  };
 
   const toggleVoice = () => {
     if (isListening) {
@@ -262,7 +308,14 @@ export default function ChatPage() {
       const transcript = Array.from(event.results)
         .map((r: any) => r[0].transcript)
         .join('');
+      
       setInput(transcript);
+
+      // Auto-send when voice input is fully complete (isFinal)
+      const isFinal = event.results[event.results.length - 1].isFinal;
+      if (isFinal && transcript.trim().length > 0) {
+        sendMessage(transcript, true);
+      }
     };
 
     recognition.onend = () => setIsListening(false);
@@ -424,14 +477,22 @@ export default function ChatPage() {
                       </div>
                     )}
                     <div className={`max-w-[80%] ${msg.role === 'user' ? 'order-first' : ''}`}>
-                      <div
-                        className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      <div className={`relative group/msg rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                           msg.role === 'user'
                             ? 'bg-brand-500 text-white rounded-br-md'
-                            : 'glass text-white/80 rounded-bl-md'
+                            : 'glass text-white/80 rounded-bl-md pr-10'
                         }`}
                       >
                         {msg.content}
+                        {msg.role === 'assistant' && (
+                          <button
+                            onClick={() => speakText(msg.content, msg.id || '')}
+                            className={`absolute right-2 top-2 p-1.5 transition-colors rounded-md ${speakingId === msg.id ? 'text-brand-400 opacity-100' : 'text-white/40 hover:text-white/80 opacity-0 group-hover/msg:opacity-100'}`}
+                            title={speakingId === msg.id ? "Stop reading" : "Read aloud"}
+                          >
+                            {speakingId === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                          </button>
+                        )}
                       </div>
                       {msg.cards && msg.cards.length > 0 && (
                         <div className="mt-3 space-y-2">
@@ -441,15 +502,37 @@ export default function ChatPage() {
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: ci * 0.1 }}
-                              className="card-interactive p-4"
+                              className={`card-interactive p-4 ${card.type === 'news' ? 'cursor-pointer' : ''}`}
+                              onClick={() => {
+                                if (card.type === 'news') {
+                                  setSelectedArticle({
+                                    id: 'temp',
+                                    title: getCardTitle(card),
+                                    titleEn: card.title,
+                                    titleSi: card.titleSi || '',
+                                    titleTa: card.titleTa || '',
+                                    summary: getCardDesc(card),
+                                    summaryEn: card.description,
+                                    summarySi: card.descriptionSi || '',
+                                    summaryTa: card.descriptionTa || '',
+                                    source: card.source || '',
+                                    sourceUrl: card.sourceUrl || '',
+                                    url: card.sourceUrl || '',
+                                    category: 'News',
+                                    imageUrl: card.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&h=400&fit=crop',
+                                    publishedAt: card.publishedAt || 'Recent',
+                                    district: card.district || 'Colombo'
+                                  } as any);
+                                }
+                              }}
                             >
                               <div className="flex items-start gap-3">
                                 <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                                   card.type === 'news' ? 'bg-accent-cyan' : card.type === 'service' ? 'bg-accent-amber' : 'bg-accent-green'
                                 }`} />
                                 <div className="flex-1">
-                                  <h4 className="text-sm font-semibold text-white mb-1">{card.title}</h4>
-                                  <p className="text-xs text-white/40">{card.description}</p>
+                                  <h4 className="text-sm font-semibold text-white mb-1">{getCardTitle(card)}</h4>
+                                  <p className="text-xs text-white/40">{getCardDesc(card)}</p>
                                   {/* Prominent source */}
                                   {card.source && (
                                     <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/[0.05]">
@@ -553,6 +636,11 @@ export default function ChatPage() {
         </div>
       </div>
       </div>
+
+      {/* News details modal */}
+      {selectedArticle && (
+        <NewsModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
+      )}
     </div>
   );
 }

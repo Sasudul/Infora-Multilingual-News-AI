@@ -63,8 +63,10 @@ public class NewsRepository {
             Map<String, Object> data = new HashMap<>();
             data.put("title_en", article.getTitleEn());
             data.put("title_si", article.getTitleSi());
+            data.put("title_ta", article.getTitleTa());
             data.put("summary_en", article.getSummaryEn());
             data.put("summary_si", article.getSummarySi());
+            data.put("summary_ta", article.getSummaryTa());
             data.put("source", article.getSource());
             data.put("sourceUrl", article.getSourceUrl());
             data.put("url", article.getUrl());
@@ -196,8 +198,10 @@ public class NewsRepository {
         article.setId(doc.getId());
         article.setTitleEn(doc.getString("title_en"));
         article.setTitleSi(doc.getString("title_si"));
+        article.setTitleTa(doc.getString("title_ta"));
         article.setSummaryEn(doc.getString("summary_en"));
         article.setSummarySi(doc.getString("summary_si"));
+        article.setSummaryTa(doc.getString("summary_ta"));
         article.setSource(doc.getString("source"));
         article.setSourceUrl(doc.getString("sourceUrl"));
         article.setUrl(doc.getString("url"));

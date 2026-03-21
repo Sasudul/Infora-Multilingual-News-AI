@@ -1,24 +1,19 @@
 'use client';
 
+import { useI18n } from '@/i18n';
 import { motion } from 'framer-motion';
 import {
-  Globe,
+  ArrowRight,
   Brain,
+  Code2,
   Database,
-  Newspaper,
-  Landmark,
+  Globe,
   MessageSquare,
   Shield,
-  Zap,
   Users,
-  Code2,
-  ArrowRight,
-  Server,
-  Layers,
-  Workflow,
+  Zap
 } from 'lucide-react';
 import Link from 'next/link';
-import { useI18n } from '@/i18n';
 
 const techStack = [
   { category: 'Frontend', items: ['Next.js 14', 'React Native / Expo', 'Framer Motion', 'Tailwind CSS'] },
@@ -59,14 +54,14 @@ export default function AboutPage() {
           </h1>
           <p className="text-white/40 text-lg leading-relaxed">
             A production-ready, multilingual conversational AI platform enabling Sri Lankan citizens
-            to access news, government services, and information — in Sinhala, Tamil, and English.
+            to access news, government services, and information in Sinhala, Tamil, and English.
           </p>
         </motion.div>
 
         {/* Mission cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-24">
           {[
-            { icon: Globe, title: 'Multilingual First', desc: 'Every feature supports Sinhala, Tamil, and English natively — not as an afterthought.', color: 'from-accent-cyan to-blue-400' },
+            { icon: Globe, title: 'Multilingual First', desc: 'Every feature supports Sinhala, Tamil, and English natively not as an afterthought.', color: 'from-accent-cyan to-blue-400' },
             { icon: Shield, title: 'Verified & Accurate', desc: 'News from verified Sri Lankan outlets. Government data from official sources only.', color: 'from-accent-green to-emerald-400' },
             { icon: Users, title: 'Built for Citizens', desc: 'Designed for everyday citizens navigating government services and staying informed.', color: 'from-brand-500 to-brand-400' },
           ].map((card, i) => (
@@ -102,7 +97,7 @@ export default function AboutPage() {
               How the <span className="gradient-text">AI Works</span>
             </h2>
             <p className="text-white/40 max-w-xl mx-auto">
-              From user question to structured answer — the complete processing flow.
+              From user question to structured answer the complete processing flow.
             </p>
           </div>
 
@@ -279,7 +274,7 @@ export default function AboutPage() {
             Ready to try <span className="gradient-text">Infora</span>?
           </h2>
           <p className="text-white/40 mb-6 text-sm">
-            Start chatting now — ask about news, government services, or anything in your language.
+            Start chatting now ask about news, government services, or anything in your language.
           </p>
           <Link href="/chat" className="btn-primary inline-flex items-center gap-2">
             {t.cta.startNow} <ArrowRight size={16} />
