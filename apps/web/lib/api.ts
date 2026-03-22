@@ -68,7 +68,7 @@ export const chatApi = {
 // ─── User API ───
 export const userApi = {
   get: (userId: string) => request<any>(`/users/${userId}`),
-  createOrUpdate: (userId: string, data: { name: string; email: string; preferredLanguage: string }) =>
+  createOrUpdate: (userId: string, data: { name: string; email: string; profileImageUrl: string; preferredLanguage: string }) =>
     request<any>(`/users/${userId}`, {
       method: 'POST',
       body: JSON.stringify(data),

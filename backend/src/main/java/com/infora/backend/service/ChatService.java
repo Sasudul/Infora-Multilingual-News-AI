@@ -6,6 +6,7 @@ import com.infora.backend.model.ChatSession;
 import com.infora.backend.model.Message;
 import com.infora.backend.model.NewsArticle;
 import com.infora.backend.model.GovService;
+import com.infora.backend.model.User;
 import com.infora.backend.repository.ChatRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +33,14 @@ public class ChatService {
     private final NewsService newsService;
     private final GovServiceService govServiceService;
     private final LlmRAGService llmRAGService;
+    private final UserService userService;
 
-    public ChatService(ChatRepository chatRepository, NewsService newsService, GovServiceService govServiceService, LlmRAGService llmRAGService) {
+    public ChatService(ChatRepository chatRepository, NewsService newsService, GovServiceService govServiceService, LlmRAGService llmRAGService, UserService userService) {
         this.chatRepository = chatRepository;
         this.newsService = newsService;
         this.govServiceService = govServiceService;
         this.llmRAGService = llmRAGService;
+        this.userService = userService;
     }
 
     public ChatResponse processMessage(String userId, ChatRequest request) {
@@ -60,7 +63,7 @@ public class ChatService {
 
         // Process intent and generate response
         ChatResponse response = detectIntentAndRespond(
-                request.getMessage(), request.getLanguage());
+                userId, request.getMessage(), request.getLanguage());
         response.setSessionId(session.getId());
 
         // Save assistant response
@@ -92,10 +95,21 @@ public class ChatService {
      * Simple keyword-based intent detection (demo).
      * Replace with Rasa NLP integration for production.
      */
-    private ChatResponse detectIntentAndRespond(String message, String language) {
+    private ChatResponse detectIntentAndRespond(String userId, String message, String language) {
         String query = message.toLowerCase();
         List<ChatResponse.ResponseCard> cards = new ArrayList<>();
         StringBuilder contextBuilder = new StringBuilder();
+
+        try {
+            User user = userService.getUser(userId);
+            if (user != null && user.getName() != null && !user.getName().isBlank()) {
+                contextBuilder.append("CRITICAL CONTEXT: The user you are talking to is named '")
+                              .append(user.getName())
+                              .append("'. Be polite and address them occasionally by name but do not overdo it.\n\n");
+            }
+        } catch (Exception e) {
+            // No profile found
+        }
 
         if (containsNewsIntent(query)) {
             List<NewsArticle> articles = newsService.getLatestNews(3);

@@ -54,6 +54,39 @@ public class NewsRepository {
         }
     }
 
+    public boolean existsSimilar(String title) {
+        if (title == null || title.isBlank()) return false;
+        String[] newWords = title.toLowerCase().replaceAll("[^a-z0-9 ]", "").split("\\s+");
+        Set<String> newWordSet = new HashSet<>(Arrays.asList(newWords));
+        newWordSet.removeIf(w -> w.length() <= 3); // Ignore short words/stop words
+
+        if (newWordSet.isEmpty()) return false;
+        
+        // Only compare against last 48 hours to prevent stale false positives
+        Instant recentThreshold = Instant.now().minus(java.time.Duration.ofHours(48));
+
+        for (NewsArticle article : memoryCache.values()) {
+            if (article.getPublishedAt() != null && article.getPublishedAt().isBefore(recentThreshold)) continue;
+            if (article.getTitleEn() == null) continue;
+
+            String[] existingWords = article.getTitleEn().toLowerCase().replaceAll("[^a-z0-9 ]", "").split("\\s+");
+            Set<String> existingWordSet = new HashSet<>(Arrays.asList(existingWords));
+            existingWordSet.removeIf(w -> w.length() <= 3);
+
+            int matchCount = 0;
+            for (String w : newWordSet) {
+                if (existingWordSet.contains(w)) matchCount++;
+            }
+
+            // If heavy keyword overlap, it's covering the same topic/event
+            double overlapScore = (double) matchCount / Math.max(newWordSet.size(), 1);
+            if (overlapScore >= 0.55) {
+                return true; 
+            }
+        }
+        return false;
+    }
+
     public NewsArticle save(NewsArticle article) {
         String docId = article.getId() != null ? article.getId() : UUID.randomUUID().toString();
         article.setId(docId);

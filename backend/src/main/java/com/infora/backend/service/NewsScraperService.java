@@ -49,6 +49,15 @@ public class NewsScraperService {
     @Value("${news.sources.newswire:https://www.newswire.lk/feed/}")
     private String newsWireUrl;
 
+    @Value("${news.sources.daily-mirror:https://www.dailymirror.lk/rss}")
+    private String dailyMirrorUrl;
+
+    @Value("${news.sources.hiru-news:https://www.hirunews.lk/rss/english.xml}")
+    private String hiruNewsUrl;
+
+    @Value("${news.sources.daily-news:https://www.dailynews.lk/feed/}")
+    private String dailyNewsUrl;
+
     private final OkHttpClient httpClient = new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
@@ -66,8 +75,10 @@ public class NewsScraperService {
         log.info("Starting extensive historical news scrape cycle...");
         int total = 0;
         
-        // Ada Derana (Standard RSS, usually no pagination)
+        // Standard RSS (often no pagination)
         total += scrapeRssFeed("Ada Derana", adaDeranaUrl, "https://www.adaderana.lk");
+        total += scrapeRssFeed("Hiru News", hiruNewsUrl, "https://www.hirunews.lk");
+        total += scrapeRssFeed("Daily Mirror", dailyMirrorUrl, "https://www.dailymirror.lk");
         
         // For WordPress-based sites, let's fetch up to 15 pages to guarantee 7+ days of historical news
         for (int page = 1; page <= 15; page++) {
@@ -75,6 +86,7 @@ public class NewsScraperService {
             total += scrapeRssFeed("Colombo Gazette", colomboGazetteUrl + suffix, "https://colombogazette.com");
             total += scrapeRssFeed("The Island", theIslandUrl + suffix, "https://island.lk");
             total += scrapeRssFeed("NewsWire", newsWireUrl + suffix, "https://www.newswire.lk");
+            total += scrapeRssFeed("Daily News", dailyNewsUrl + suffix, "https://www.dailynews.lk");
         }
         
         log.info("Extensive news scrape cycle complete. Total rich historical articles saved/cached: {}", total);
@@ -202,6 +214,13 @@ public class NewsScraperService {
                         NewsArticle article = new NewsArticle();
                         article.setId(generateArticleId(sourceName, title));
                         article.setTitleEn(title.trim());
+
+                        // Prevent duplicates and heavily similar news across sources
+                        if (newsRepository.existsSimilar(article.getTitleEn())) {
+                            log.debug("Skipping duplicate/similar news item: {}", title);
+                            continue;
+                        }
+
                         article.setSummaryEn(description);
                         article.setSource(sourceName);
                         article.setSourceUrl(sourceUrl);

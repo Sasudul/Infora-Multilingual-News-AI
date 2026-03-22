@@ -23,6 +23,7 @@ public class UserService {
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
+        user.setProfileImageUrl(request.getProfileImageUrl());
         user.setPreferredLanguage(request.getPreferredLanguage());
         return userRepository.save(userId, user);
     }

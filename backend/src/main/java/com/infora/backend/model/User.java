@@ -6,15 +6,17 @@ public class User {
     private String id;
     private String name;
     private String email;
+    private String profileImageUrl;
     private String preferredLanguage; // "en", "si", "ta"
     private Instant createdAt;
 
     public User() {}
 
-    public User(String id, String name, String email, String preferredLanguage, Instant createdAt) {
+    public User(String id, String name, String email, String profileImageUrl, String preferredLanguage, Instant createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
+        this.profileImageUrl = profileImageUrl;
         this.preferredLanguage = preferredLanguage;
         this.createdAt = createdAt;
     }
@@ -27,6 +29,8 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getPreferredLanguage() { return preferredLanguage; }
     public void setPreferredLanguage(String preferredLanguage) { this.preferredLanguage = preferredLanguage; }
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

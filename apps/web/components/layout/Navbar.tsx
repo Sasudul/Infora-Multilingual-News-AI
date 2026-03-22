@@ -13,7 +13,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { lang, setLang, t } = useI18n();
-  const { user, loading, signOut } = useAuth();
+  const { user, dbUser, loading, signOut } = useAuth();
 
   const links = [
     { label: t.nav.home, href: '/' },
@@ -77,14 +77,18 @@ export function Navbar() {
 
           {!loading && user ? (
             <div className="flex items-center gap-4 ml-2">
-              <div className="flex items-center gap-2 pr-4 border-r border-white/10">
-                <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center">
-                  <User size={14} className="text-brand-300" />
+              <Link href="/profile" className="flex items-center gap-2 pr-4 border-r border-white/10 hover:opacity-80 transition-opacity">
+                <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 overflow-hidden flex items-center justify-center">
+                  {dbUser?.profileImageUrl || user?.photoURL ? (
+                    <img src={dbUser?.profileImageUrl || user?.photoURL || ''} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={14} className="text-brand-300" />
+                  )}
                 </div>
                 <span className="text-sm font-medium text-white/90">
-                  {user.displayName || user.email?.split('@')[0]}
+                  {dbUser?.name || user.displayName || user.email?.split('@')[0]}
                 </span>
-              </div>
+              </Link>
               <button
                 onClick={signOut}
                 className="text-white/50 hover:text-rose-400 transition-colors"
@@ -155,15 +159,19 @@ export function Navbar() {
               <div className="flex flex-col gap-2 mt-2 pt-4 border-t border-white/5">
                 {!loading && user ? (
                   <>
-                    <div className="flex items-center gap-3 px-2 py-2 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-brand-500/20 flex items-center justify-center">
-                        <User size={18} className="text-brand-300" />
+                    <Link href="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-2 py-2 mb-2 hover:bg-white/5 rounded-lg transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-brand-500/20 flex items-center justify-center border border-brand-500/30 overflow-hidden">
+                        {dbUser?.profileImageUrl || user?.photoURL ? (
+                          <img src={dbUser?.profileImageUrl || user?.photoURL || ''} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={18} className="text-brand-300" />
+                        )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-white">{user.displayName || 'User'}</span>
+                        <span className="text-sm font-medium text-white">{dbUser?.name || user.displayName || 'User'}</span>
                         <span className="text-xs text-white/40">{user.email}</span>
                       </div>
-                    </div>
+                    </Link>
                     <button
                       onClick={() => { signOut(); setIsOpen(false); }}
                       className="w-full text-center py-2.5 rounded-lg flex items-center justify-center gap-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all"
