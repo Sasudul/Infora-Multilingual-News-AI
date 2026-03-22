@@ -32,6 +32,38 @@ export const NEWS_SOURCES = [
     type: 'Digital News',
     verified: true,
   },
+  {
+    id: 'daily-mirror',
+    name: 'Daily Mirror',
+    url: 'https://www.dailymirror.lk',
+    logo: '📰',
+    type: 'Newspaper / Digital',
+    verified: true,
+  },
+  {
+    id: 'hiru-news',
+    name: 'Hiru News',
+    url: 'https://www.hirunews.lk',
+    logo: '📺',
+    type: 'TV / Digital',
+    verified: true,
+  },
+  {
+    id: 'daily-news',
+    name: 'Daily News',
+    url: 'https://www.dailynews.lk',
+    logo: '📰',
+    type: 'Newspaper / Digital',
+    verified: true,
+  },
+  {
+    id: 'newsfirst',
+    name: 'NewsFirst',
+    url: 'https://www.newsfirst.lk',
+    logo: '📺',
+    type: 'TV / Digital',
+    verified: true,
+  },
 ] as const;
 
 // ─── News Categories ───

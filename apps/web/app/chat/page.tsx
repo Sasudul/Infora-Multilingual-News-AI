@@ -130,7 +130,7 @@ function getDemo(query: string, lang: LangCode): { text: string; cards: Response
 
 export default function ChatPage() {
   const { lang, setLang, t } = useI18n();
-  const { user } = useAuth();
+  const { user, dbUser } = useAuth();
   const [sessions, setSessions] = useState<any[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -563,8 +563,12 @@ export default function ChatPage() {
                       )}
                     </div>
                     {msg.role === 'user' && (
-                      <div className="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1">
-                        <User size={14} className="text-white/60" />
+                      <div className="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+                        {dbUser?.profileImageUrl || user?.photoURL ? (
+                          <img src={dbUser?.profileImageUrl || user?.photoURL || ''} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={14} className="text-white/60" />
+                        )}
                       </div>
                     )}
                   </motion.div>

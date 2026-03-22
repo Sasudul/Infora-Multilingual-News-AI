@@ -29,12 +29,12 @@ public class UserRepository {
             if (user.getCreatedAt() == null) {
                 user.setCreatedAt(Instant.now());
             }
-            Map<String, Object> data = Map.of(
-                    "name", user.getName(),
-                    "email", user.getEmail(),
-                    "preferredLanguage", user.getPreferredLanguage(),
-                    "createdAt", user.getCreatedAt().toString()
-            );
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("name", user.getName());
+            data.put("email", user.getEmail());
+            data.put("profileImageUrl", user.getProfileImageUrl());
+            data.put("preferredLanguage", user.getPreferredLanguage());
+            data.put("createdAt", user.getCreatedAt().toString());
             firestore.collection(COLLECTION).document(userId).set(data).get();
             log.info("User saved: {}", userId);
             return user;
@@ -81,6 +81,7 @@ public class UserRepository {
                 doc.getId(),
                 doc.getString("name"),
                 doc.getString("email"),
+                doc.getString("profileImageUrl"),
                 doc.getString("preferredLanguage"),
                 doc.getString("createdAt") != null
                         ? Instant.parse(doc.getString("createdAt"))
