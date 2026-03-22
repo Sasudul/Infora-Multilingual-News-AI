@@ -428,36 +428,54 @@ export default function ChatPage() {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="section-container py-8 max-w-3xl">
+      <div className="flex-1 overflow-y-auto relative z-10 w-full">
+        {isEmpty && (
+          <div className="absolute right-[-50px] top-[40%] -translate-y-1/2 pointer-events-none opacity-30 select-none hidden lg:block">
+            <div className="w-[450px] h-[450px] rounded-full border-[1.5px] border-[#7DBDEC]/60 absolute -top-48 right-10" />
+            <div className="w-[500px] h-[500px] rounded-full border-[1.5px] border-[#7DBDEC]/60 absolute top-20 -right-32" />
+          </div>
+        )}
+
+        <div className="w-full flex-1 flex flex-col items-center pt-10 sm:pt-20 pb-8 px-4 relative z-20">
           {isEmpty ? (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-16"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="flex-1 flex flex-col items-center justify-center w-full max-w-3xl"
             >
-            
-              <h2 className="font-display text-2xl font-bold text-white mb-2">
-                {t.chat.welcomeTitle} <span className="gradient-text">Infora</span>
+              <h2 className="font-display text-[2.5rem] md:text-5xl font-bold text-[#7DBDEC] mb-3 tracking-wide text-center">
+                {lang === 'si' ? 'මට ඔබට උදව් කළ හැක්කේ කෙසේද?' : lang === 'ta' ? 'நான் உங்களுக்கு எப்படி உதவ முடியும்?' : 'How can I help You'}
               </h2>
-              <p className="text-white/40 mb-10 max-w-md mx-auto">
-                {t.chat.welcomeSubtitle}
+              <p className="text-white/40 text-sm md:text-base mb-12 text-center tracking-wide">
+                {lang === 'si' ? 'තහවුරු කළ පුවත් සහ රජයේ සේවා' : lang === 'ta' ? 'சரிபார்க்கப்பட்ட செய்திகள் மற்றும் அரச சேவைகள்' : 'Verified News & Government Services'}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
-                {suggestions.map((s) => {
-                  const Icon = iconMap[s.icon] || Sparkles;
-                  return (
-                    <button
-                      key={s.text}
-                      onClick={() => sendMessage(s.text)}
-                      className="card-interactive flex items-center gap-3 px-4 py-3 text-left text-sm"
-                    >
-                      <Icon size={16} className="text-brand-400 flex-shrink-0" />
-                      <span className="text-white/70">{s.text}</span>
-                      <ArrowRight size={14} className="text-white/20 ml-auto flex-shrink-0" />
-                    </button>
-                  );
-                })}
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                {(lang === 'si' ? [
+                  'ගමන් බලපත්‍ර අයදුම් කිරීමේ අවශ්‍යතා',
+                  'කොළඹ නවතම පුවත්',
+                  'නැතිවූ ජාතික හැඳුනුම්පත ලබාගැනීම',
+                  'අද විනිමය අනුපාත'
+                ] : lang === 'ta' ? [
+                  'கடவுச்சீட்டு விண்ணப்ப தேவைகள்',
+                  'கொழும்பின் சமீபத்திய செய்திகள்',
+                  'தொலைந்த NIC ஐ மாற்றுவது எப்படி',
+                  'இன்றைய மாற்று விகிதங்கள்'
+                ] : [
+                  'Passport Application Requirements', 
+                  'Latest News In Colombo', 
+                  'How to Replace Lost NIC', 
+                  'Exchange Rates Today'
+                ]).map((text) => (
+                  <button
+                    key={text}
+                    onClick={() => sendMessage(text)}
+                    className="w-full px-6 py-4 rounded-xl border border-white/20 bg-transparent text-left hover:bg-white/[0.03] hover:border-[#7DBDEC]/50 transition-all text-sm md:text-[15px] text-white/80 font-medium"
+                  >
+                    {text}
+                  </button>
+                ))}
               </div>
             </motion.div>
           ) : (
@@ -600,44 +618,40 @@ export default function ChatPage() {
       </div>
 
       {/* Input bar */}
-      <div className="border-t border-white/[0.06] bg-surface-900/80 backdrop-blur-xl">
-        <div className="section-container max-w-3xl py-4">
-          <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={t.chat.placeholder}
-                className="w-full px-5 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-brand-500/40 focus:bg-white/[0.07] transition-all"
-              />
+      <div className="w-full pt-4 pb-8 px-4 flex flex-col items-center bg-transparent z-20">
+        <form onSubmit={handleSubmit} className="w-full max-w-4xl relative">
+          <div className="flex items-center w-full bg-[#161B26] border border-white/5 rounded-2xl pl-6 pr-3 py-3 shadow-2xl">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={lang === 'si' ? 'ඔබට අවශ්‍ය කුමක්ද?' : lang === 'ta' ? 'உங்களுக்கு என்ன வேண்டும்?' : 'Hello Can you what are the passport application requirements ?'}
+              className="flex-1 bg-transparent border-none text-white text-[15px] placeholder:text-white/40 focus:outline-none focus:ring-0 mr-4"
+            />
+            
+            <div className="flex items-center gap-1">
+              <button type="button" className="p-2.5 text-white/40 hover:text-white/80 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </button>
+              
+              <button
+                type="button"
+                onClick={toggleVoice}
+                className={`p-2.5 transition-colors relative ${isListening ? 'text-rose-400' : 'text-white/40 hover:text-white/80'}`}
+              >
+                <Mic size={20} />
+                {isListening && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />}
+              </button>
+              
+              <button type="submit" disabled={!input.trim()} className="p-2.5 text-white/40 hover:text-white/80 transition-colors disabled:opacity-30 disabled:hover:text-white/40">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
             </div>
-            {/* Voice input button */}
-            <button
-              type="button"
-              onClick={toggleVoice}
-              className={`relative !px-4 !py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 active:scale-[0.97] ${
-                isListening
-                  ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300'
-                  : 'bg-white/[0.06] border border-white/[0.1] text-white/50 hover:text-white/80 hover:bg-white/[0.1]'
-              }`}
-              title="Voice input"
-            >
-              {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-              {isListening && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500 animate-ping" />
-              )}
-            </button>
-            {/* Send button */}
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              className="btn-primary !px-4 !py-3.5 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <Send size={18} />
-            </button>
-          </form>
-        </div>
+          </div>
+        </form>
+        <p className="text-[11px] text-white/30 tracking-wide mt-4 font-medium">
+          Infora is an Experimental AI and Can Make mistakes.
+        </p>
       </div>
       </div>
 

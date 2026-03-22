@@ -13,11 +13,11 @@ const sources = [
   { id: 1, name: 'Ada Derana', img: 'https://tse2.mm.bing.net/th/id/OIF.914WzCRqgwY0SbjVbvB8Sw?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3?w=150&h=150&fit=crop', url: 'https://www.adaderana.lk' },
   { id: 2, name: 'Colombo Gazette', img: 'https://tse4.mm.bing.net/th/id/OIP.EIwRDsBIe-oRnVVkJ7qfZwHaEK?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3w=150&h=150&fit=crop', url: 'https://colombogazette.com' },
   { id: 3, name: 'The Island', img: 'https://tse4.mm.bing.net/th/id/OIP.3osVVFwzlq7y2j-PcfaWOAAAAA?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3?w=150&h=150&fit=crop', url: 'https://island.lk' },
-  { id: 4, name: 'NewsWire', img: 'https://www.newswire.lk/wp-content/uploads/2021/02/new-logo-cropped-1.png?w=150&h=150&fit=crop', url: 'https://www.newswire.lk' },
-  { id: 5, name: 'Daily Mirror', img: 'https://ui-avatars.com/api/?name=Daily+Mirror&background=0284c7&color=fff&size=200&font-size=0.33&bold=true', url: 'https://www.dailymirror.lk' },
-  { id: 6, name: 'Hiru News', img: 'https://ui-avatars.com/api/?name=Hiru+News&background=dc2626&color=fff&size=200&font-size=0.33&bold=true', url: 'https://www.hirunews.lk' },
-  { id: 7, name: 'Daily News', img: 'https://ui-avatars.com/api/?name=Daily+News&background=1d4ed8&color=fff&size=200&font-size=0.33&bold=true', url: 'https://www.dailynews.lk' },
-  { id: 8, name: 'News First', img: 'https://ui-avatars.com/api/?name=News+First&background=ef4444&color=fff&size=200&font-size=0.33&bold=true', url: 'https://www.newsfirst.lk' },
+  { id: 4, name: 'NewsWire', img: 'https://www.newswire.lk/wp-content/uploads/2021/02/new-logo-cropped-1.png', url: 'https://www.newswire.lk' },
+  { id: 5, name: 'Daily Mirror', img: 'https://www.liblogo.com/img-logo/da8753d340-daily-mirror-logo-daily-mirror-amp-sunday-mirror-apps-on-google-play.png?w=150&h=150&fit=crop', url: 'https://www.dailymirror.lk' },
+  { id: 6, name: 'Hiru News', img: 'https://th.bing.com/th/id/R.f1fd2896cf6798d9592c5a64ec10ee89?rik=XOqZPWRZ%2bJY3Sg&pid=ImgRaw&r=0', url: 'https://www.hirunews.lk' },
+  { id: 7, name: 'Daily News', img: 'https://images.rawpixel.com/image_png_social_square/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA1L2pvYjcyNi0xMzAtcC5wbmc.png', url: 'https://www.dailynews.lk' },
+  { id: 8, name: 'News First', img: 'https://1.bp.blogspot.com/-ndV7sIbUq2E/YLzsxWn953I/AAAAAAABkhs/XiuT533KIsAr5UKrLaUo1AeqhJtQZABcACLcBGAsYHQ/s709/News-First-Sri-Lanka.jpg', url: 'https://www.newsfirst.lk' },
 ];
 
 export function ReliableSources() {

@@ -60,12 +60,14 @@ public class LlmRAGService {
             String langName = "si".equals(language) ? "Sinhala" : "ta".equals(language) ? "Tamil" : "English";
             ObjectNode systemMsg = mapper.createObjectNode();
             systemMsg.put("role", "system");
-            String sysInstruction = "You are 'Infora AI', an advanced, friendly, and helpful AI assistant specifically designed for Sri Lankans. "
-                + "You behave exactly like ChatGPT: naturally conversational, empathetic, and highly intelligent. "
-                + "CRITICAL INSTRUCTION: You MUST ALWAYS generate your final response entirely translated into: " + langName + ". Do not mix languages unless absolutely necessary.\n\n"
-                + "If the user asks for news, weather, or services, use the LIVE CONTEXT below to answer them. DO NOT hallucinate news. "
-                + "If the context doesn't have the exact answer, apologize and converse naturally.\n\n"
-                + "LIVE CONTEXT (Data from our backend):\n" + systemContext;
+            String sysInstruction = "You are 'Infora AI', an advanced AI assistant designed for Sri Lankans.\n"
+                + "CRITICAL RULE: You MUST answer the user ENTIRELY in the " + langName + " language. "
+                + "NEVER reply in English if the requested language is " + langName + ". "
+                + "You will receive English context data below. You MUST mentally translate this data into " + langName + " before answering the user. "
+                + "If you fail to speak in " + langName + ", the system will fail.\n\n"
+                + "Use the LIVE CONTEXT below to answer them. DO NOT hallucinate news. "
+                + "If the context lacks the answer, apologize and converse naturally strictly in " + langName + ".\n\n"
+                + "LIVE CONTEXT (Translate this to " + langName + "):\n" + systemContext;
             systemMsg.put("content", sysInstruction);
             messages.add(systemMsg);
 
