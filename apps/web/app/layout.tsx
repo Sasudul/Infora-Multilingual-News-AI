@@ -1,5 +1,6 @@
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
+import { NewsReporterAvatarWrapper } from '@/components/avatar/NewsReporterAvatarWrapper';
 import { I18nProvider } from '@/i18n';
 import { AuthProvider } from '@/lib/auth';
 import type { Metadata } from 'next';
@@ -43,10 +44,12 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <I18nProvider>
-            <div className="noise-overlay" />
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <NewsReporterAvatarWrapper>
+              <div className="noise-overlay" />
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </NewsReporterAvatarWrapper>
           </I18nProvider>
         </AuthProvider>
       </body>

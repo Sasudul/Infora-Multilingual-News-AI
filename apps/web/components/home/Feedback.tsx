@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useI18n } from '@/i18n';
+import { motion } from 'framer-motion';
 
 const textMap: any = {
   en: { title: 'Send Your Feedback To Improve And Support InFora AI', desc: 'Infora makes AI accessible and transparent. Help us continuously improve our multilingual engine to accurately guide Sri Lankan citizens with the best verified information.', placeholder: 'Enter your email here...', btn: 'Subscribe' },
@@ -31,7 +31,7 @@ export function Feedback() {
             <div className="absolute inset-4 border border-blue-400/20 rounded-full" />
             
             <img 
-              src="/infora.png" 
+              src="/reporter.png" 
               alt="InFora Support AI" 
               className="w-full h-full object-contain filter drop-shadow-2xl"
             />

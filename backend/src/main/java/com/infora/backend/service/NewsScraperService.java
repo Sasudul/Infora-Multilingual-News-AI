@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Scheduled service that scrapes RSS feeds from verified Sri Lankan news sources,
- * parses the XML, and stores articles in Firestore.
  */
 @Service
 public class NewsScraperService {
@@ -75,12 +74,10 @@ public class NewsScraperService {
         log.info("Starting extensive historical news scrape cycle...");
         int total = 0;
         
-        // Standard RSS (often no pagination)
         total += scrapeRssFeed("Ada Derana", adaDeranaUrl, "https://www.adaderana.lk");
         total += scrapeRssFeed("Hiru News", hiruNewsUrl, "https://www.hirunews.lk");
         total += scrapeRssFeed("Daily Mirror", dailyMirrorUrl, "https://www.dailymirror.lk");
         
-        // For WordPress-based sites, let's fetch up to 15 pages to guarantee 7+ days of historical news
         for (int page = 1; page <= 15; page++) {
             String suffix = "?paged=" + page;
             total += scrapeRssFeed("Colombo Gazette", colomboGazetteUrl + suffix, "https://colombogazette.com");
@@ -109,18 +106,15 @@ public class NewsScraperService {
 
                 String xml = response.body().string();
 
-                // Clean common XML issues
                 xml = xml.trim();
                 if (xml.startsWith("\uFEFF")) {
-                    xml = xml.substring(1); // Remove BOM
+                    xml = xml.substring(1); 
                 }
 
-                // Try to parse as RSS
                 Map<String, Object> rss;
                 try {
                     rss = xmlMapper.readValue(xml, Map.class);
                 } catch (Exception parseEx) {
-                    // Try removing problematic characters before the XML declaration
                     int xmlStart = xml.indexOf("<?xml");
                     if (xmlStart > 0) {
                         xml = xml.substring(xmlStart);
@@ -183,23 +177,18 @@ public class NewsScraperService {
                                         pubDate = ZonedDateTime.parse(pubDateStr.trim(), DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
                                     } catch (Exception e2) {
                                         log.debug("Could not parse date {}, generating artificial historical date", pubDateStr);
-                                        // If parsing fails completely, rather than setting all failed historical items to "now" (which ruins sorting)
-                                        // we simulate them being older by subtracting random hours (12 to 168 hours / 7 days)
                                         pubDate = Instant.now().minusSeconds((long) (Math.random() * 7 * 24 * 3600));
                                     }
                                 }
                             }
                         }
 
-                        // Use contentEncoded as description if description is missing or too short
                         if ((description == null || description.length() < 20) && contentEncoded != null) {
                             description = contentEncoded;
                         }
 
-                        // Clean HTML from description
                         if (description != null) {
                             description = description.replaceAll("<[^>]*>", "").trim();
-                            // Decode basic HTML entities
                             description = description.replaceAll("&amp;", "&")
                                     .replaceAll("&lt;", "<")
                                     .replaceAll("&gt;", ">")
@@ -231,14 +220,13 @@ public class NewsScraperService {
                         article.setPublishedAt(pubDate);
                         article.setVerified(true);
 
-                        // Perform on-the-fly NLP translations to Sinhala and Tamil
                         log.debug("Translating article: {}", title);
                         article.setTitleSi(translationService.translate(article.getTitleEn(), "si"));
                         article.setSummarySi(translationService.translate(article.getSummaryEn(), "si"));
                         article.setTitleTa(translationService.translate(article.getTitleEn(), "ta"));
                         article.setSummaryTa(translationService.translate(article.getSummaryEn(), "ta"));
                         
-                        try { Thread.sleep(200); } catch (Exception ignored) {} // Brief buffer to respect free API rate limits
+                        try { Thread.sleep(200); } catch (Exception ignored) {} 
 
                         newsRepository.save(article);
                         count++;
@@ -272,14 +260,12 @@ public class NewsScraperService {
     }
 
     private String extractImageUrl(Map<String, Object> item, String description, String contentEncoded) {
-        // Check enclosure
         Object enclosure = item.get("enclosure");
         if (enclosure instanceof Map) {
             Object url = ((Map<?, ?>) enclosure).get("url");
             if (url instanceof String) return (String) url;
         }
         
-        // Check media:content
         Object mediaContent = item.get("media:content");
         if (mediaContent instanceof Map) {
             Object url = ((Map<?, ?>) mediaContent).get("url");
@@ -298,7 +284,6 @@ public class NewsScraperService {
             if (match != null) return match;
         }
         
-        // Fallback checks for stringified maps
         if (enclosure instanceof String && ((String) enclosure).contains("url=\"")) {
              return extractAttribute((String) enclosure, "url");
         }
@@ -306,7 +291,7 @@ public class NewsScraperService {
              return extractAttribute((String) mediaContent, "url");
         }
         
-        return null; // The frontend will supply the category-based placeholder!
+        return null; 
     }
 
     private String findFirstImageSrc(String html) {
@@ -350,9 +335,7 @@ public class NewsScraperService {
                 Math.abs(title.hashCode());
     }
 
-    /**
-     * Basic keyword-based categorization.
-     */
+
     private String categorizeArticle(String title) {
         String t = title.toLowerCase();
         if (t.contains("parliament") || t.contains("minister") || t.contains("election") ||

@@ -1,20 +1,13 @@
 'use client';
 
+import { NewsArticleType, NewsModal } from '@/components/news/NewsModal';
+import { useReporter } from '@/components/avatar/ReporterProvider';
 import { useI18n, type LangCode } from '@/i18n';
-import { CHAT_SUGGESTIONS, CHAT_SUGGESTIONS_SI, CHAT_SUGGESTIONS_TA, GOV_SERVICES, LANGUAGES } from '@/lib/constants';
 import { chatApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { NewsArticleType, NewsModal } from '@/components/news/NewsModal';
+import { CHAT_SUGGESTIONS, CHAT_SUGGESTIONS_SI, CHAT_SUGGESTIONS_TA, GOV_SERVICES, LANGUAGES } from '@/lib/constants';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Menu,
-  Plus,
-  MessageSquare,
-  Trash2,
-  X,
-  Volume2,
-  VolumeX,
-  ArrowRight,
   BadgeCheck,
   BookOpen,
   Bot,
@@ -23,12 +16,15 @@ import {
   CreditCard,
   ExternalLink,
   Landmark,
+  Menu,
+  MessageSquare,
   Mic,
-  MicOff,
   Newspaper,
-  Send,
-  Sparkles,
+  Plus,
+  Trash2,
   User,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -134,14 +130,14 @@ export default function ChatPage() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<NewsArticleType | null>(null);
-  
+  const reporter = useReporter();
+
   const getCardTitle = (card: ResponseCard) => {
     return lang === 'si' ? (card.titleSi || card.title) : lang === 'ta' ? (card.titleTa || card.title) : card.title;
   };
@@ -235,7 +231,7 @@ export default function ChatPage() {
       };
       setMessages((prev) => [...prev, aiMsg]);
       if (fromVoice) {
-        speakText(aiMsg.content, aiMsg.id);
+        reporter.speakText(aiMsg.content);
       }
     } catch (e) {
       console.error("Chat API error:", e);
@@ -250,7 +246,7 @@ export default function ChatPage() {
       };
       setMessages((prev) => [...prev, aiMsg]);
       if (fromVoice) {
-        speakText(aiMsg.content, aiMsg.id);
+        reporter.speakText(aiMsg.content);
       }
     } finally {
       setIsTyping(false);
@@ -262,28 +258,15 @@ export default function ChatPage() {
     sendMessage(input);
   };
 
-  // ─── Voice Input & Output (Web Speech API) ───
+  // ─── Voice Input & Output ───
   const langMap: Record<LangCode, string> = { en: 'en-US', si: 'si-LK', ta: 'ta-LK' };
 
-  const speakText = (text: string, msgId: string) => {
-    if (!('speechSynthesis' in window)) return;
-    
-    if (speakingId === msgId) {
-      window.speechSynthesis.cancel();
-      setSpeakingId(null);
-      return;
+  const handleReadAloud = (text: string) => {
+    if (reporter.isSpeaking) {
+      reporter.stopSpeaking();
+    } else {
+      reporter.speakText(text);
     }
-
-    window.speechSynthesis.cancel();
-    setSpeakingId(msgId);
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = langMap[lang] || 'en-US';
-    
-    utterance.onend = () => setSpeakingId(null);
-    utterance.onerror = () => setSpeakingId(null);
-    
-    window.speechSynthesis.speak(utterance);
   };
 
   const toggleVoice = () => {
@@ -308,7 +291,7 @@ export default function ChatPage() {
       const transcript = Array.from(event.results)
         .map((r: any) => r[0].transcript)
         .join('');
-      
+
       setInput(transcript);
 
       // Auto-send when voice input is fully complete (isFinal)
@@ -382,18 +365,18 @@ export default function ChatPage() {
       <div className="flex-1 flex flex-col w-full h-[calc(100vh-80px)] overflow-hidden relative">
         {/* Mobile sidebar overlay */}
         {isSidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-30 md:hidden mt-20"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
-        
+
         {/* Header bar */}
         <div className="border-b border-white/[0.06] bg-surface-900/80 backdrop-blur-xl shrink-0">
         <div className="section-container flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             {user && (
-              <button 
+              <button
                 onClick={() => setIsSidebarOpen(true)}
                 className="md:hidden p-2 -ml-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg"
               >
@@ -450,7 +433,7 @@ export default function ChatPage() {
               <p className="text-white/40 text-sm md:text-base mb-12 text-center tracking-wide">
                 {lang === 'si' ? 'තහවුරු කළ පුවත් සහ රජයේ සේවා' : lang === 'ta' ? 'சரிபார்க்கப்பட்ட செய்திகள் மற்றும் அரச சேவைகள்' : 'Verified News & Government Services'}
               </p>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                 {(lang === 'si' ? [
                   'ගමන් බලපත්‍ර අයදුම් කිරීමේ අවශ්‍යතා',
@@ -463,9 +446,9 @@ export default function ChatPage() {
                   'தொலைந்த NIC ஐ மாற்றுவது எப்படி',
                   'இன்றைய மாற்று விகிதங்கள்'
                 ] : [
-                  'Passport Application Requirements', 
-                  'Latest News In Colombo', 
-                  'How to Replace Lost NIC', 
+                  'Passport Application Requirements',
+                  'Latest News In Colombo',
+                  'How to Replace Lost NIC',
                   'Exchange Rates Today'
                 ]).map((text) => (
                   <button
@@ -504,11 +487,11 @@ export default function ChatPage() {
                         {msg.content}
                         {msg.role === 'assistant' && (
                           <button
-                            onClick={() => speakText(msg.content, msg.id || '')}
-                            className={`absolute right-2 top-2 p-1.5 transition-colors rounded-md ${speakingId === msg.id ? 'text-brand-400 opacity-100' : 'text-white/40 hover:text-white/80 opacity-0 group-hover/msg:opacity-100'}`}
-                            title={speakingId === msg.id ? "Stop reading" : "Read aloud"}
+                            onClick={() => handleReadAloud(msg.content)}
+                            className={`absolute right-2 top-2 p-1.5 transition-colors rounded-md ${reporter.isSpeaking ? 'text-brand-400 opacity-100' : 'text-white/40 hover:text-white/80 opacity-0 group-hover/msg:opacity-100'}`}
+                            title={reporter.isSpeaking ? "Stop reading" : "Read aloud"}
                           >
-                            {speakingId === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                            {reporter.isSpeaking ? <VolumeX size={14} /> : <Volume2 size={14} />}
                           </button>
                         )}
                       </div>
@@ -628,12 +611,12 @@ export default function ChatPage() {
               placeholder={lang === 'si' ? 'ඔබට අවශ්‍ය කුමක්ද?' : lang === 'ta' ? 'உங்களுக்கு என்ன வேண்டும்?' : 'Hello Can you what are the passport application requirements ?'}
               className="flex-1 bg-transparent border-none text-white text-[15px] placeholder:text-white/40 focus:outline-none focus:ring-0 mr-4"
             />
-            
+
             <div className="flex items-center gap-1">
               <button type="button" className="p-2.5 text-white/40 hover:text-white/80 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </button>
-              
+
               <button
                 type="button"
                 onClick={toggleVoice}
@@ -642,7 +625,7 @@ export default function ChatPage() {
                 <Mic size={20} />
                 {isListening && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />}
               </button>
-              
+
               <button type="submit" disabled={!input.trim()} className="p-2.5 text-white/40 hover:text-white/80 transition-colors disabled:opacity-30 disabled:hover:text-white/40">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
               </button>
