@@ -1,8 +1,8 @@
 'use client';
 
+import { useI18n } from '@/i18n';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useI18n } from '@/i18n';
 
 const textMap: any = {
   en: {
@@ -75,14 +75,14 @@ export function Hero() {
           {/* Custom rounded shape background */}
           <div className="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px]">
             <div 
-              className="absolute inset-0 bg-slate-100 overflow-hidden shadow-2xl"
+              className="absolute inset-0 bg-transparent overflow-hidden shadow-2xl"
               style={{
                 borderRadius: '80px 80px 80px 80px',
                 clipPath: 'polygon(10% 0%, 90% 0%, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0% 90%, 0% 10%)'
               }}
             >
               <img 
-                src="/infora.png" 
+                src="/reporter.png" 
                 alt="InFora AI Mascot" 
                 className="w-full h-full object-cover object-center"
               />

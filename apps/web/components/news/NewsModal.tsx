@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+'use client';
+
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, Calendar, MapPin, Newspaper, Volume2, VolumeX } from 'lucide-react';
+import { useReporter } from '@/components/avatar/ReporterProvider';
 
 export interface NewsArticleType {
   title: string;
@@ -11,39 +14,27 @@ export interface NewsArticleType {
   imageUrl: string;
   publishedAt: string;
   district: string;
-  url: string; // the actual link to the full news
+  url: string;
 }
 
 export function NewsModal({ article, onClose }: { article: NewsArticleType | null; onClose: () => void }) {
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const { speakText, stopSpeaking, isSpeaking } = useReporter();
 
   useEffect(() => {
     return () => {
-      window.speechSynthesis.cancel();
+      stopSpeaking();
     };
-  }, []);
+  }, [stopSpeaking]);
 
   if (!article) return null;
 
   const toggleSpeech = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
+      stopSpeaking();
     } else {
-      window.speechSynthesis.cancel();
       const textToSpeak = `${article.title}. ${article.summary}`;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      
-      const isSinhala = /[\u0D80-\u0DFF]/.test(article.title);
-      const isTamil = /[\u0B80-\u0BFF]/.test(article.title);
-      utterance.lang = isSinhala ? 'si-LK' : isTamil ? 'ta-IN' : 'en-US';
-      
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      
-      window.speechSynthesis.speak(utterance);
-      setIsSpeaking(true);
+      speakText(textToSpeak);
     }
   };
 

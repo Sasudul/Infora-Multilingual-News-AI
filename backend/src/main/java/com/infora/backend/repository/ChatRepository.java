@@ -82,6 +82,28 @@ public class ChatRepository {
             if (message.getMetadata() != null) {
                 msgMap.put("metadata", message.getMetadata());
             }
+            // Persist cards for chat history
+            if (message.getCards() != null && !message.getCards().isEmpty()) {
+                List<Map<String, Object>> cardMaps = new ArrayList<>();
+                for (com.infora.backend.dto.ChatResponse.ResponseCard card : message.getCards()) {
+                    Map<String, Object> cm = new HashMap<>();
+                    if (card.getTitle() != null) cm.put("title", card.getTitle());
+                    if (card.getTitleSi() != null) cm.put("titleSi", card.getTitleSi());
+                    if (card.getTitleTa() != null) cm.put("titleTa", card.getTitleTa());
+                    if (card.getDescription() != null) cm.put("description", card.getDescription());
+                    if (card.getDescriptionSi() != null) cm.put("descriptionSi", card.getDescriptionSi());
+                    if (card.getDescriptionTa() != null) cm.put("descriptionTa", card.getDescriptionTa());
+                    if (card.getType() != null) cm.put("type", card.getType());
+                    if (card.getSource() != null) cm.put("source", card.getSource());
+                    if (card.getSourceUrl() != null) cm.put("sourceUrl", card.getSourceUrl());
+                    cm.put("verified", card.isVerified());
+                    if (card.getImageUrl() != null) cm.put("imageUrl", card.getImageUrl());
+                    if (card.getPublishedAt() != null) cm.put("publishedAt", card.getPublishedAt());
+                    if (card.getDistrict() != null) cm.put("district", card.getDistrict());
+                    cardMaps.add(cm);
+                }
+                msgMap.put("cards", cardMaps);
+            }
 
             firestore.collection(COLLECTION).document(sessionId)
                     .update(
@@ -120,6 +142,30 @@ public class ChatRepository {
                 msg.setTimestamp(m.get("timestamp") != null
                         ? Instant.parse((String) m.get("timestamp"))
                         : Instant.now());
+                // Restore cards from persisted data
+                Object cardsObj = m.get("cards");
+                if (cardsObj instanceof List) {
+                    List<Map<String, Object>> rawCards = (List<Map<String, Object>>) cardsObj;
+                    List<com.infora.backend.dto.ChatResponse.ResponseCard> cards = new ArrayList<>();
+                    for (Map<String, Object> rc : rawCards) {
+                        com.infora.backend.dto.ChatResponse.ResponseCard card = new com.infora.backend.dto.ChatResponse.ResponseCard();
+                        card.setTitle((String) rc.get("title"));
+                        card.setTitleSi((String) rc.get("titleSi"));
+                        card.setTitleTa((String) rc.get("titleTa"));
+                        card.setDescription((String) rc.get("description"));
+                        card.setDescriptionSi((String) rc.get("descriptionSi"));
+                        card.setDescriptionTa((String) rc.get("descriptionTa"));
+                        card.setType((String) rc.get("type"));
+                        card.setSource((String) rc.get("source"));
+                        card.setSourceUrl((String) rc.get("sourceUrl"));
+                        card.setVerified(Boolean.TRUE.equals(rc.get("verified")));
+                        card.setImageUrl((String) rc.get("imageUrl"));
+                        card.setPublishedAt((String) rc.get("publishedAt"));
+                        card.setDistrict((String) rc.get("district"));
+                        cards.add(card);
+                    }
+                    msg.setCards(cards);
+                }
                 return msg;
             }).collect(Collectors.toList());
         }
