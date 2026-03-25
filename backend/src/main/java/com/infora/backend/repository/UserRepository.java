@@ -76,6 +76,21 @@ public class UserRepository {
         }
     }
 
+    private Instant parseInstant(Object val) {
+        if (val == null) return Instant.now();
+        if (val instanceof String) {
+            try {
+                return Instant.parse((String) val);
+            } catch (Exception e) {
+                return Instant.now();
+            }
+        }
+        if (val instanceof com.google.cloud.Timestamp) {
+            return Instant.ofEpochSecond(((com.google.cloud.Timestamp) val).getSeconds(), ((com.google.cloud.Timestamp) val).getNanos());
+        }
+        return Instant.now();
+    }
+
     private User documentToUser(DocumentSnapshot doc) {
         return new User(
                 doc.getId(),
@@ -83,9 +98,7 @@ public class UserRepository {
                 doc.getString("email"),
                 doc.getString("profileImageUrl"),
                 doc.getString("preferredLanguage"),
-                doc.getString("createdAt") != null
-                        ? Instant.parse(doc.getString("createdAt"))
-                        : Instant.now()
+                parseInstant(doc.get("createdAt"))
         );
     }
 }

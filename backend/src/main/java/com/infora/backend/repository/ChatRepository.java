@@ -29,13 +29,13 @@ public class ChatRepository {
             ChatSession session = new ChatSession(
                     sessionId, userId, language, new ArrayList<>(), Instant.now(), Instant.now());
 
-            Map<String, Object> data = Map.of(
-                    "userId", userId,
-                    "language", language,
-                    "messages", new ArrayList<>(),
-                    "createdAt", session.getCreatedAt().toString(),
-                    "updatedAt", session.getUpdatedAt().toString()
-            );
+            Map<String, Object> data = new HashMap<>();
+            data.put("userId", userId != null ? userId : "anonymous");
+            data.put("language", language != null ? language : "en");
+            data.put("messages", new ArrayList<>());
+            data.put("createdAt", session.getCreatedAt() != null ? session.getCreatedAt().toString() : Instant.now().toString());
+            data.put("updatedAt", session.getUpdatedAt() != null ? session.getUpdatedAt().toString() : Instant.now().toString());
+            
             firestore.collection(COLLECTION).document(sessionId).set(data).get();
             log.info("Chat session created: {}", sessionId);
             return session;
@@ -49,7 +49,13 @@ public class ChatRepository {
         try {
             DocumentSnapshot doc = firestore.collection(COLLECTION).document(sessionId).get().get();
             if (!doc.exists()) return Optional.empty();
-            return Optional.of(documentToSession(doc));
+            
+            try {
+                return Optional.of(documentToSession(doc));
+            } catch (Exception e) {
+                log.error("Failed to parse chat session document {}: {}", sessionId, e.getMessage());
+                return Optional.empty(); // Effectively treat it as not found instead of crashing
+            }
         } catch (Exception e) {
             log.error("Failed to fetch chat session: {}", sessionId, e);
             throw new RuntimeException("Failed to fetch chat session", e);
@@ -63,7 +69,15 @@ public class ChatRepository {
                     .limit(50)
                     .get().get();
             return snapshot.getDocuments().stream()
-                    .map(this::documentToSession)
+                    .map(doc -> {
+                        try {
+                            return documentToSession(doc);
+                        } catch (Exception e) {
+                            log.error("Failed to parse session {}: {}", doc.getId(), e.getMessage());
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Failed to fetch sessions for user: {}", userId, e);
@@ -75,8 +89,8 @@ public class ChatRepository {
     public void addMessage(String sessionId, Message message) {
         try {
             Map<String, Object> msgMap = new HashMap<>();
-            msgMap.put("role", message.getRole());
-            msgMap.put("content", message.getContent());
+            msgMap.put("role", message.getRole() != null ? message.getRole() : "user");
+            msgMap.put("content", message.getContent() != null ? message.getContent() : "");
             msgMap.put("type", message.getType() != null ? message.getType() : "text");
             msgMap.put("timestamp", Instant.now().toString());
             if (message.getMetadata() != null) {
@@ -127,6 +141,21 @@ public class ChatRepository {
         }
     }
 
+    private Instant parseInstant(Object val) {
+        if (val == null) return Instant.now();
+        if (val instanceof String) {
+            try {
+                return Instant.parse((String) val);
+            } catch (Exception e) {
+                return Instant.now();
+            }
+        }
+        if (val instanceof com.google.cloud.Timestamp) {
+            return Instant.ofEpochSecond(((com.google.cloud.Timestamp) val).getSeconds(), ((com.google.cloud.Timestamp) val).getNanos());
+        }
+        return Instant.now();
+    }
+
     @SuppressWarnings("unchecked")
     private ChatSession documentToSession(DocumentSnapshot doc) {
         List<Map<String, Object>> rawMessages =
@@ -136,33 +165,36 @@ public class ChatRepository {
         if (rawMessages != null) {
             messages = rawMessages.stream().map(m -> {
                 Message msg = new Message();
-                msg.setRole((String) m.get("role"));
-                msg.setContent((String) m.get("content"));
-                msg.setType((String) m.getOrDefault("type", "text"));
-                msg.setTimestamp(m.get("timestamp") != null
-                        ? Instant.parse((String) m.get("timestamp"))
-                        : Instant.now());
+                msg.setRole(m.get("role") != null ? m.get("role").toString() : "user");
+                msg.setContent(m.get("content") != null ? m.get("content").toString() : "");
+                msg.setType(m.get("type") != null ? m.get("type").toString() : "text");
+                msg.setTimestamp(parseInstant(m.get("timestamp")));
+                
                 // Restore cards from persisted data
                 Object cardsObj = m.get("cards");
                 if (cardsObj instanceof List) {
                     List<Map<String, Object>> rawCards = (List<Map<String, Object>>) cardsObj;
                     List<com.infora.backend.dto.ChatResponse.ResponseCard> cards = new ArrayList<>();
                     for (Map<String, Object> rc : rawCards) {
-                        com.infora.backend.dto.ChatResponse.ResponseCard card = new com.infora.backend.dto.ChatResponse.ResponseCard();
-                        card.setTitle((String) rc.get("title"));
-                        card.setTitleSi((String) rc.get("titleSi"));
-                        card.setTitleTa((String) rc.get("titleTa"));
-                        card.setDescription((String) rc.get("description"));
-                        card.setDescriptionSi((String) rc.get("descriptionSi"));
-                        card.setDescriptionTa((String) rc.get("descriptionTa"));
-                        card.setType((String) rc.get("type"));
-                        card.setSource((String) rc.get("source"));
-                        card.setSourceUrl((String) rc.get("sourceUrl"));
-                        card.setVerified(Boolean.TRUE.equals(rc.get("verified")));
-                        card.setImageUrl((String) rc.get("imageUrl"));
-                        card.setPublishedAt((String) rc.get("publishedAt"));
-                        card.setDistrict((String) rc.get("district"));
-                        cards.add(card);
+                        try {
+                            com.infora.backend.dto.ChatResponse.ResponseCard card = new com.infora.backend.dto.ChatResponse.ResponseCard();
+                            if (rc.get("title") != null) card.setTitle(rc.get("title").toString());
+                            if (rc.get("titleSi") != null) card.setTitleSi(rc.get("titleSi").toString());
+                            if (rc.get("titleTa") != null) card.setTitleTa(rc.get("titleTa").toString());
+                            if (rc.get("description") != null) card.setDescription(rc.get("description").toString());
+                            if (rc.get("descriptionSi") != null) card.setDescriptionSi(rc.get("descriptionSi").toString());
+                            if (rc.get("descriptionTa") != null) card.setDescriptionTa(rc.get("descriptionTa").toString());
+                            if (rc.get("type") != null) card.setType(rc.get("type").toString());
+                            if (rc.get("source") != null) card.setSource(rc.get("source").toString());
+                            if (rc.get("sourceUrl") != null) card.setSourceUrl(rc.get("sourceUrl").toString());
+                            card.setVerified(Boolean.TRUE.equals(rc.get("verified")));
+                            if (rc.get("imageUrl") != null) card.setImageUrl(rc.get("imageUrl").toString());
+                            if (rc.get("publishedAt") != null) card.setPublishedAt(rc.get("publishedAt").toString());
+                            if (rc.get("district") != null) card.setDistrict(rc.get("district").toString());
+                            cards.add(card);
+                        } catch (Exception e) {
+                            log.warn("Skipping malformed card in message", e);
+                        }
                     }
                     msg.setCards(cards);
                 }
@@ -175,10 +207,8 @@ public class ChatRepository {
                 doc.getString("userId"),
                 doc.getString("language"),
                 messages,
-                doc.getString("createdAt") != null
-                        ? Instant.parse(doc.getString("createdAt")) : Instant.now(),
-                doc.getString("updatedAt") != null
-                        ? Instant.parse(doc.getString("updatedAt")) : Instant.now()
+                parseInstant(doc.get("createdAt")),
+                parseInstant(doc.get("updatedAt"))
         );
     }
 }
