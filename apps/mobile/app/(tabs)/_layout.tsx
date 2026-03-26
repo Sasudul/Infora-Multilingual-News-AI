@@ -8,18 +8,10 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#0A0D14',
-          borderTopColor: 'rgba(255,255,255,0.06)',
-          borderTopWidth: 1,
           height: 70,
-          paddingBottom: 10,
-          paddingTop: 8,
         },
         tabBarActiveTintColor: '#7DBDEC',
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.3)',
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
-        },
+        tabBarInactiveTintColor: '#555',
       }}
     >
       <Tabs.Screen
@@ -31,6 +23,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="news"
         options={{
@@ -40,6 +33,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="chat"
         options={{
@@ -49,6 +43,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="services"
         options={{
@@ -58,6 +53,8 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* 🔥 IMPORTANT */}
       <Tabs.Screen
         name="profile"
         options={{
