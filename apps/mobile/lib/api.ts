@@ -1,11 +1,17 @@
 import { auth } from './firebase';
 import { Platform } from 'react-native';
 
-// For Android emulator, use 10.0.2.2; otherwise localhost
+// Smart API base URL detection
 const getApiBase = () => {
+  // Web mode (expo --web) should use localhost
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8080/api/v1';
+  }
+  // Android emulator uses 10.0.2.2 to reach host machine
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:8080/api/v1';
   }
+  // iOS simulator uses localhost
   return 'http://localhost:8080/api/v1';
 };
 

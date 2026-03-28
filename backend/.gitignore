@@ -20,3 +20,4 @@ HELP.md
 # Logs
 *.log
 spring.log
+.env 

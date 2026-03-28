@@ -1,23 +1,30 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useI18n } from '../../i18n';
 
 export default function TabLayout() {
+  const { t } = useI18n();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#0A0D14',
-          height: 70,
+          borderTopColor: 'rgba(255,255,255,0.06)',
+          height: 65,
+          paddingBottom: 8,
+          paddingTop: 4,
         },
         tabBarActiveTintColor: '#7DBDEC',
         tabBarInactiveTintColor: '#555',
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('home'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -27,7 +34,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="news"
         options={{
-          title: 'News',
+          title: t('news'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="newspaper" size={size} color={color} />
           ),
@@ -37,7 +44,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat',
+          title: t('chat'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />
           ),
@@ -47,21 +54,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="services"
         options={{
-          title: 'Services',
+          title: t('services'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase" size={size} color={color} />
           ),
         }}
       />
 
-      {/* 🔥 IMPORTANT */}
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('profile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
+        }}
+      />
+
+      {/* Hide the login tab from tab bar */}
+      <Tabs.Screen
+        name="login"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
