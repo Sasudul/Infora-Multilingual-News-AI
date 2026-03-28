@@ -1,56 +1,203 @@
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
+  View, Text, ScrollView, TouchableOpacity, Image, TextInput, Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
+import { useI18n, LangCode } from '../../i18n';
+import { useAuth } from '../../lib/auth';
+import { Platform } from 'react-native';
+import { userApi } from '../../lib/api';
+import { COLORS } from '../../styles/colors';
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
-
-import { setLanguage, t } from '../../i18n';
-
-// 🔐 Firebase functions
-const login = async () => {
-  await signInWithEmailAndPassword(auth, "test@mail.com", "123456");
-};
-
-const saveUser = async () => {
-  await addDoc(collection(db, "users"), {
-    name: "Branjana",
-    email: "test@mail.com",
-  });
-};
-
-// 🌍 Languages
-const LANGUAGES = [
+const LANGUAGES: { code: LangCode; native: string }[] = [
   { code: 'en', native: 'English' },
   { code: 'si', native: 'සිංහල' },
   { code: 'ta', native: 'தமிழ்' },
 ];
 
-// 📋 Menu
-const MENU_ITEMS = [
-  { icon: 'person-circle', label: 'Edit Profile', color: '#7DBDEC' },
-  { icon: 'globe', label: 'Language', color: '#A78BFA' },
-  { icon: 'notifications', label: 'Notifications', color: '#F59E0B' },
-  { icon: 'shield-checkmark', label: 'Privacy & Security', color: '#10B981' },
-  { icon: 'help-circle', label: 'Help & Support', color: '#22D3EE' },
-  { icon: 'information-circle', label: 'About Infora', color: '#EC4899' },
-];
-
 export default function ProfileScreen() {
-  const [selectedLang, setSelectedLang] = useState<'en' | 'si' | 'ta'>('en');
-  const [, setRefresh] = useState(0); // 🔥 for UI refresh
+  const { t, lang, setLang } = useI18n();
+  const { user, loading, signIn, signUp, signInWithGoogle, signOut } = useAuth();
+
+  // Login form state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleAuth = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      if (isSignUp) {
+        await signUp(email.trim(), password);
+      } else {
+        await signIn(email.trim(), password);
+      }
+      Alert.alert('Success', isSignUp ? 'Account created!' : 'Logged in!');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Authentication failed');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLanguageChange = async (code: LangCode) => {
+    setLang(code);
+    if (user) {
+      try {
+        await userApi.updateLanguage(user.uid, code);
+      } catch (e) {
+        // Silently fail
+      }
+    }
+  };
+
+  const handleSignOut = async () => {
+    Alert.alert(t('logout'), 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: t('logout'), style: 'destructive', onPress: signOut },
+    ]);
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator color={COLORS.primary} size="large" />
+      </SafeAreaView>
+    );
+  }
+
+  // Not logged in — show login/signup form
+  if (!user) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+        <ScrollView contentContainerStyle={{ padding: 20, justifyContent: 'center', flexGrow: 1 }}>
+          {/* Logo */}
+          <View style={{ alignItems: 'center', marginBottom: 30 }}>
+            <View style={{
+              width: 70, height: 70, borderRadius: 20,
+              backgroundColor: COLORS.primary + '20',
+              alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+            }}>
+              <Ionicons name="sparkles" size={32} color={COLORS.primary} />
+            </View>
+            <Text style={{ fontSize: 26, fontWeight: '700', color: '#FFF' }}>
+              Infora <Text style={{ color: COLORS.primary }}>AI</Text>
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 6, fontSize: 13 }}>
+              {isSignUp ? 'Create your account' : 'Sign in to continue'}
+            </Text>
+          </View>
+
+          {/* Form */}
+          <TextInput
+            placeholder={t('email')}
+            placeholderTextColor="#666"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={{
+              backgroundColor: '#131A2A', padding: 14,
+              borderRadius: 12, color: '#FFF', marginBottom: 12,
+              borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+              fontSize: 14,
+            }}
+          />
+
+          <TextInput
+            placeholder={t('password')}
+            placeholderTextColor="#666"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={{
+              backgroundColor: '#131A2A', padding: 14,
+              borderRadius: 12, color: '#FFF', marginBottom: 20,
+              borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+              fontSize: 14,
+            }}
+          />
+
+          <TouchableOpacity
+            onPress={handleAuth}
+            disabled={authLoading}
+            style={{
+              backgroundColor: COLORS.primary, padding: 14,
+              borderRadius: 12, alignItems: 'center',
+            }}
+          >
+            {authLoading ? (
+              <ActivityIndicator color="#000" />
+            ) : (
+              <Text style={{ fontWeight: '700', color: '#000', fontSize: 15 }}>
+                {isSignUp ? 'Sign Up' : t('login')}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 20 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+            <Text style={{ color: 'rgba(255,255,255,0.3)', marginHorizontal: 12, fontSize: 12 }}>OR</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+          </View>
+
+          {/* Google Sign-In */}
+          <TouchableOpacity
+            onPress={async () => {
+              setAuthLoading(true);
+              try {
+                await signInWithGoogle();
+              } catch (error: any) {
+                Alert.alert('Error', error.message || 'Google Sign-In failed');
+              } finally {
+                setAuthLoading(false);
+              }
+            }}
+            style={{
+              backgroundColor: '#FFF', padding: 14,
+              borderRadius: 12, alignItems: 'center',
+              flexDirection: 'row', justifyContent: 'center', gap: 10,
+            }}
+          >
+            <Text style={{ fontSize: 18 }}>G</Text>
+            <Text style={{ fontWeight: '600', color: '#333', fontSize: 15 }}>
+              Continue with Google
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setIsSignUp(!isSignUp)}
+            style={{ marginTop: 16, alignItems: 'center' }}
+          >
+            <Text style={{ color: COLORS.primary, fontSize: 13 }}>
+              {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // Logged in — show profile
+  const MENU_ITEMS = [
+    { icon: 'person-circle', label: t('editProfile'), color: '#7DBDEC' },
+    { icon: 'globe', label: t('language'), color: '#A78BFA' },
+    { icon: 'notifications', label: t('notifications'), color: '#F59E0B' },
+    { icon: 'shield-checkmark', label: t('privacy'), color: '#10B981' },
+    { icon: 'help-circle', label: t('help'), color: '#22D3EE' },
+    { icon: 'information-circle', label: t('about'), color: '#EC4899' },
+  ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0A0D14' }}>
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 30 }}>
 
         {/* Header */}
         <Text style={{ fontSize: 24, fontWeight: '700', color: '#FFF', marginBottom: 20 }}>
@@ -59,55 +206,48 @@ export default function ProfileScreen() {
 
         {/* Avatar Card */}
         <View style={{
-          alignItems: 'center',
-          marginBottom: 20,
-          backgroundColor: '#131A2A',
-          padding: 20,
-          borderRadius: 16,
+          alignItems: 'center', marginBottom: 20,
+          backgroundColor: '#131A2A', padding: 24, borderRadius: 18,
+          borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
         }}>
-          <Image
-            source={require('../../assets/images/reporter.png')}
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              marginBottom: 10,
-              borderWidth: 2,
-              borderColor: '#7DBDEC',
-            }}
-          />
+          <View style={{
+            width: 80, height: 80, borderRadius: 40,
+            borderWidth: 2.5, borderColor: COLORS.primary,
+            alignItems: 'center', justifyContent: 'center',
+            marginBottom: 12, overflow: 'hidden',
+          }}>
+            {user.photoURL ? (
+              <Image source={{ uri: user.photoURL }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+            ) : (
+              <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.primary + '30', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 30, fontWeight: '700', color: COLORS.primary }}>
+                  {(user.displayName || user.email || 'U')[0].toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </View>
 
-          <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '600' }}>
-            Infora User
+          <Text style={{ color: '#FFF', fontSize: 18, fontWeight: '700' }}>
+            {user.displayName || user.email?.split('@')[0] || 'User'}
           </Text>
-
-          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-            user@infora.lk
+          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 }}>
+            {user.email}
           </Text>
 
           {/* Language Switch */}
-          <View style={{ flexDirection: 'row', marginTop: 15 }}>
-            {LANGUAGES.map((l, i) => (
+          <View style={{ flexDirection: 'row', marginTop: 16, gap: 8 }}>
+            {LANGUAGES.map((l) => (
               <TouchableOpacity
                 key={l.code}
-                onPress={() => {
-                  setSelectedLang(l.code as any);
-                  setLanguage(l.code as any);
-                  setRefresh(prev => prev + 1); // 🔥 force UI update
-                }}
+                onPress={() => handleLanguageChange(l.code)}
                 style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  marginRight: i !== LANGUAGES.length - 1 ? 8 : 0,
-                  backgroundColor:
-                    selectedLang === l.code ? '#7DBDEC' : '#222',
-                  borderRadius: 10,
+                  paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10,
+                  backgroundColor: lang === l.code ? COLORS.primary : '#222',
                 }}
               >
                 <Text style={{
-                  color: selectedLang === l.code ? '#000' : '#FFF',
-                  fontWeight: '600',
-                  fontSize: 12,
+                  color: lang === l.code ? '#000' : '#FFF',
+                  fontWeight: '600', fontSize: 12,
                 }}>
                   {l.native}
                 </Text>
@@ -118,64 +258,44 @@ export default function ProfileScreen() {
 
         {/* Menu */}
         <View style={{
-          backgroundColor: '#131A2A',
-          borderRadius: 12,
-          overflow: 'hidden'
+          backgroundColor: '#131A2A', borderRadius: 14, overflow: 'hidden',
+          borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
         }}>
           {MENU_ITEMS.map((item, i) => (
             <TouchableOpacity
               key={i}
               style={{
-                flexDirection: 'row',
-                padding: 15,
-                alignItems: 'center',
+                flexDirection: 'row', padding: 16, alignItems: 'center',
                 borderBottomWidth: i < MENU_ITEMS.length - 1 ? 1 : 0,
-                borderBottomColor: '#222',
+                borderBottomColor: 'rgba(255,255,255,0.04)',
               }}
             >
-              <Ionicons name={item.icon as any} size={20} color={item.color} />
-              <Text style={{ color: '#FFF', marginLeft: 10 }}>
+              <View style={{
+                width: 32, height: 32, borderRadius: 8,
+                backgroundColor: `${item.color}15`,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Ionicons name={item.icon as any} size={18} color={item.color} />
+              </View>
+              <Text style={{ color: '#FFF', marginLeft: 12, flex: 1, fontSize: 14 }}>
                 {item.label}
               </Text>
+              <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.15)" />
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Buttons */}
+        {/* Sign Out */}
         <TouchableOpacity
-          onPress={login}
+          onPress={handleSignOut}
           style={{
-            marginTop: 20,
-            backgroundColor: '#7DBDEC',
-            padding: 12,
-            borderRadius: 10,
-            alignItems: 'center'
+            marginTop: 20, paddingVertical: 14, borderRadius: 12,
+            backgroundColor: 'rgba(239,68,68,0.1)',
+            borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)',
           }}
         >
-          <Text style={{ color: '#000', fontWeight: '600' }}>
-            Login (Test)
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={saveUser}
-          style={{
-            marginTop: 10,
-            backgroundColor: '#22C55E',
-            padding: 12,
-            borderRadius: 10,
-            alignItems: 'center'
-          }}
-        >
-          <Text style={{ color: '#000', fontWeight: '600' }}>
-            Save User
-          </Text>
-        </TouchableOpacity>
-
-        {/* Logout */}
-        <TouchableOpacity style={{ marginTop: 20 }}>
-          <Text style={{ color: 'red', textAlign: 'center' }}>
-            Sign Out
+          <Text style={{ color: '#EF4444', textAlign: 'center', fontWeight: '600', fontSize: 14 }}>
+            {t('logout')}
           </Text>
         </TouchableOpacity>
 

@@ -1,74 +1,96 @@
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../lib/auth';
+import { COLORS } from '../../styles/colors';
 
 export default function LoginScreen() {
+  const router = useRouter();
+  const { signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleAuth = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+    setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-     Alert.alert("Success", "Login successful ✅");
+      if (isSignUp) {
+        await signUp(email.trim(), password);
+      } else {
+        await signIn(email.trim(), password);
+      }
+      Alert.alert('Success', isSignUp ? 'Account created!' : 'Logged in!');
+      router.back();
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert('Error', error.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#0A0D14' }}>
-      
-      <Text style={{ fontSize: 28, fontWeight: '700', color: '#FFF', marginBottom: 20 }}>
-        Login
-      </Text>
+    <SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: 20, backgroundColor: COLORS.background }}>
+      <View style={{ alignItems: 'center', marginBottom: 30 }}>
+        <Ionicons name="sparkles" size={40} color={COLORS.primary} />
+        <Text style={{ fontSize: 28, fontWeight: '700', color: '#FFF', marginTop: 10 }}>
+          {isSignUp ? 'Create Account' : 'Welcome Back'}
+        </Text>
+      </View>
 
-      {/* Email */}
       <TextInput
-        placeholder="Enter email"
-        placeholderTextColor="#888"
+        placeholder="Email"
+        placeholderTextColor="#666"
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
         style={{
-          backgroundColor: '#131A2A',
-          padding: 14,
-          borderRadius: 10,
-          color: '#FFF',
-          marginBottom: 12,
+          backgroundColor: '#131A2A', padding: 14,
+          borderRadius: 12, color: '#FFF', marginBottom: 12,
         }}
       />
 
-      {/* Password */}
       <TextInput
-        placeholder="Enter password"
-        placeholderTextColor="#888"
+        placeholder="Password"
+        placeholderTextColor="#666"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         style={{
-          backgroundColor: '#131A2A',
-          padding: 14,
-          borderRadius: 10,
-          color: '#FFF',
-          marginBottom: 20,
+          backgroundColor: '#131A2A', padding: 14,
+          borderRadius: 12, color: '#FFF', marginBottom: 20,
         }}
       />
 
-      {/* Button */}
       <TouchableOpacity
-        onPress={handleLogin}
+        onPress={handleAuth}
+        disabled={loading}
         style={{
-          backgroundColor: '#7DBDEC',
-          padding: 14,
-          borderRadius: 10,
-          alignItems: 'center',
+          backgroundColor: COLORS.primary, padding: 14,
+          borderRadius: 12, alignItems: 'center',
         }}
       >
-        <Text style={{ fontWeight: '600', color: '#000' }}>Login</Text>
+        {loading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <Text style={{ fontWeight: '700', color: '#000' }}>
+            {isSignUp ? 'Sign Up' : 'Login'}
+          </Text>
+        )}
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} style={{ marginTop: 16, alignItems: 'center' }}>
+        <Text style={{ color: COLORS.primary, fontSize: 13 }}>
+          {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+        </Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }

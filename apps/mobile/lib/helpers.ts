@@ -1,5 +1,12 @@
 import { newsApi, chatApi } from './api';
 
+export const getValidImage = (url: any, fallback: string) => {
+  if (!url || typeof url !== 'string' || url === 'null' || url.trim() === '' || !url.startsWith('http')) {
+    return fallback;
+  }
+  return url;
+};
+
 // Fetch news
 export const fetchNews = async () => {
   try {
